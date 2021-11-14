@@ -1,0 +1,482 @@
+@import '~antd/dist/antd.css';
+
+/* body：内外边距、背景色 */
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #e2e2e2;
+}
+
+/* 链接 */
+a {
+  text-decoration: none;
+  color: #222;
+}
+
+a:hover {
+  color: #40a9ff;
+}
+
+/* 列表：不使用默认的边距、样式 */
+ul, li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 图片：避免超出父容器 */
+img {
+  max-width: 100%;
+}
+
+/* 底部边框 */
+.border-bottom {
+  border-bottom: 1px rgba(0, 0, 0, 0.08) solid;
+}
+
+/* 行布局：不换行、默认左对齐 */
+.row {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+/* 列布局：不换列、默认上对齐 */
+.col {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+/* flex-warp：可换行 */
+.wrap {
+  flex-wrap: wrap;
+}
+
+/* justify-content: 定义主轴上项目的排列规则 */
+/* 主轴方向：起点对齐（默认） */
+.justify-start {
+  justify-content: flex-start;
+}
+
+/* 主轴方向：两端对齐 */
+.justify-between {
+  justify-content: space-between;
+}
+
+/* 主轴方向：居中对齐 */
+.justify-center {
+  justify-content: center;
+}
+
+/* 主轴方向：终点对齐 */
+.justify-end {
+  justify-content: flex-end;
+}
+
+/* 主轴方向：包围对齐 */
+.justify-around {
+  justify-content: space-around;
+}
+
+/* align-items: 定义交叉轴上项目的排列规则 */
+/* 交叉轴方向：两端对齐（默认） */
+.align-stretch {
+  align-items: stretch;
+}
+
+/* 交叉轴方向：起点对齐 */
+.align-start {
+  align-items: flex-start;
+}
+
+/* 交叉轴方向：中线对齐 */
+.align-center {
+  align-items: center;
+}
+
+/* 交叉轴方向：终点对齐 */
+.align-end {
+  align-items: flex-end;
+}
+
+/* 交叉轴方向：与第一行文字的基线对齐 */
+.align-baseline {
+  align-items: baseline;
+}
+
+
+/* 交叉轴方向：指定项目起点对齐 */
+.align-self-start {
+  align-self: flex-start;
+}
+
+/* 交叉轴方向：指定项目居中对齐 */
+.align-self-center {
+  align-self: center;
+}
+
+/* 交叉轴方向：指定项目终点对齐 */
+.align-self-end {
+  align-self: flex-end;
+}
+
+/* 交叉轴方向：指定项目与第一行文字的基线对齐 */
+.align-self-baseline {
+  align-self: baseline;
+}
+
+/* 交叉轴方向：指定项目终点对齐 */
+.align-self-start {
+  align-self: flex-end;
+}
+
+/* 交叉轴方向：指定项目两端对齐（默认） */
+.align-self-stretch {
+  align-self: stretch;
+}
+
+
+/* align-content: 定义交叉轴方向有多行时：行（列）与行（列）间的对齐方式 */
+/* 交叉轴方向：行（列）间两端对齐 */
+.aligin-content-stretch {
+  align-content: stretch;
+}
+
+/* 交叉轴方向：行（列）间起点对齐 */
+.aligin-content-start {
+  align-content: flex-start;
+}
+
+/* 交叉轴方向：行（列）间居中对齐 */
+.aligin-content-center {
+  align-content: center;
+}
+
+/* 交叉轴方向：行（列）间终点对齐 */
+.aligin-content-end {
+  align-content: flex-end;
+}
+
+/* 交叉轴方向：行（列）间两端对齐 */
+.aligin-content-between {
+  align-content: space-between;
+}
+
+/* 交叉轴方向：行（列）间包围对齐 */
+.aligin-content-around {
+  align-content: space-around;
+}
+
+/* 作者：粗体、灰色文字 */
+.author {
+  font-weight: bold;
+  color: #808080;
+}
+
+/* 标题：粗体 */
+.post-title {
+  font-weight: bold;
+  color: #333;
+  line-height: 2em;
+}
+
+/* 内容：深色文字 */
+.post-content {
+  color: #222;
+  word-break: break-word;
+  line-height: 1.8em;
+}
+
+/* 描述：浅色文字 */
+.post-description {
+  color: #555;
+  word-break: break-word;
+  line-height: 1.8em;
+}
+
+/* 额外信息：更浅色文字 */
+.post-extra {
+  color: #ccc;
+}
+
+/* 文本：最多两行 */
+.lines-2 {
+  display: inline-block;
+}
+
+/* 文本：一行，溢出部分不显示 */
+.overflow-hide-line-one {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* 文本只显示一行时用"nowrap" */
+  white-space: nowrap;
+}
+
+/* 文本：多行，溢出部分不显示。配合"lines-*"来固定行数 */
+.overflow-hide-line-multi {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+/* 宽度：和父容器等宽（100%） */
+.width-100per {
+  width: 100%;
+}
+
+/* 填充剩余的宽度（需要父元素布局为flex） */
+.width-fill-remain {
+  width: 0;
+  flex: 1 0 auto;
+}
+
+/* 该元素右对齐 */
+.put-right {
+  margin-left: auto;
+}
+
+/* 可滚动：该元素的高度需可计算到值 */
+.scrollable {
+  overflow: auto;
+}
+
+/* 行布局中：该元素占一半的宽度（需为"row"容器的子元素） */
+.half {
+  /* 元素可缩放 */
+  flex: 1 1 auto;
+  /* 初始宽度为 0，实际宽度为浏览器计算 */
+  width: 0;
+}
+
+/* 头像 */
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.avatar-small {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.avatar-medium {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.avatar-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+/* 和文字同一行的头像 */
+.avatar-text {
+  width: 16px;
+  height: 16px;
+}
+
+/* 文本：最多两行 */
+.lines-2 {
+  line-height: 1.8em;
+  max-height: 3.6em;
+}
+
+/* 元素的内边距 */
+/* 四边内边距 */
+.padding {
+  padding: 5px;
+}
+
+.padding-large {
+  padding: 10px;
+}
+
+/* 水平内边距 */
+.padding-h {
+  padding: 0 5px;
+}
+
+.padding-h-large {
+  padding: 0 10px;
+}
+
+
+/* 垂直内边距 */
+.padding-v {
+  padding: 5px 0;
+}
+
+.padding-v-large {
+  padding: 10px 0;
+}
+
+/* 元素的上内边距 */
+.padding-top {
+  padding-top: 5px;
+}
+
+.padding-top-large {
+  padding-top: 10px;
+}
+
+/* 元素的右内边距 */
+.padding-right {
+  padding-right: 5px;
+}
+
+.padding-right-large {
+  padding-right: 10px;
+}
+
+/* 元素的下内边距 */
+.padding-bottom {
+  padding-bottom: 5px;
+}
+
+.padding-bottom-large {
+  padding-bottom: 10px;
+}
+
+/* 元素的左内边距 */
+.padding-left {
+  padding-left: 5px;
+}
+
+.padding-left-large {
+  padding-left: 10px;
+}
+
+/* 元素的外边距 */
+/* 四边外边距 */
+.margin {
+  margin: 5px;
+}
+
+.margin-large {
+  margin: 10px;
+}
+
+/* 水平外边距 */
+.margin-h {
+  margin: 0 5px;
+}
+
+.margin-h-large {
+  margin: 0 10px;
+}
+
+/* 垂直外边距 */
+.margin-v {
+  margin: 5px 0;
+}
+
+.margin-v-large {
+  margin: 10px 0;
+}
+
+/* 元素的上外边距*/
+.margin-top {
+  margin-top: 5px;
+}
+
+.margin-top-large {
+  margin-top: 10px;
+}
+
+/* 元素的右外边距 */
+.margin-right {
+  margin-right: 5px;
+}
+
+.margin-right-large {
+  margin-right: 10px;
+}
+
+/* 元素的下外边距 */
+.margin-bottom {
+  margin-bottom: 5px;
+}
+
+.margin-bottom-largemedium {
+  margin-bottom: 10px;
+}
+
+/* 元素的左外边距 */
+.margin-left {
+  margin-left: 5px;
+}
+
+.margin-left-large {
+  margin-left: 10px;
+}
+
+/* 元素下直接子元素的外边距 */
+.margin-v-sub > * {
+  margin: 5px 0;
+}
+
+.margin-v-sub-large > * {
+  margin: 10px 0;
+}
+
+.margin-sub-right > * {
+  margin-right: 5px;
+}
+
+.margin-sub-right-large > * {
+  margin-right: 10px;
+}
+
+/* 垂直布局的面板 */
+.VPanel {
+  width: 300px;
+  height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+  padding-bottom: 10px;
+  border-left: 1px rgba(0, 0, 0, 0.08) solid;
+  border-right: 1px rgba(0, 0, 0, 0.08) solid;
+  background-color: #FFF;
+}
+
+.VPanel-header {
+  flex: 0 1 auto;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e8e8e8;
+  padding-left: 5px;
+}
+
+.VPanel-header-title {
+  padding: 5px 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.VPanel-content {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.VPanel-footer {
+  flex: 0 1 auto;
+}
+
+.is-marked {
+  background: rgba(82, 196, 26, 0.2)
+}
+
+.is-new-added {
+  background: rgba(255, 255, 0, 0.3);
+}
