@@ -1,4 +1,4 @@
-import {Log, notify} from "../../../comm/utils"
+import {notify} from "../../../comm/utils"
 // HTML解析库
 const cheerio = require('cheerio')
 
@@ -88,7 +88,7 @@ export namespace anchor {
         let result = await resp.json()
 
         if (result === "Not Found") {
-          Log.log(TAG, `${basic.plat} 不存在该主播(${basic.id})`)
+          console.log(TAG, `${basic.plat} 不存在该主播(${basic.id})`)
           return new Status({
             name: `不存在：${basic.id}`,
             liveUrl: `https://www.douyu.com/${basic.id}`
@@ -122,7 +122,7 @@ export namespace anchor {
         let text = await resp.text()
 
         if (text.indexOf("找不到这个主播") >= 0) {
-          Log.log(TAG, `${basic.plat} 不存在该主播(${basic.id})`)
+          console.log(TAG, `${basic.plat} 不存在该主播(${basic.id})`)
           return new Status({
             name: `不存在：${basic.id}`,
             liveUrl: `https://www.huya.com/${basic.id}`
@@ -180,7 +180,7 @@ export namespace anchor {
 
         // 没有该主播的信息
         if (!result.data || result.data.length === 0) {
-          Log.log(TAG, `${basic.plat} 不存在该主播(${basic.id})`)
+          console.log(TAG, `${basic.plat} 不存在该主播(${basic.id})`)
           return new Status({
             name: `不存在：${basic.id}`,
             // 因为 basic 的 id 为用户 id，而不是房间号，获取状态出错时不能知道其房间号，所以访问首页
@@ -216,7 +216,7 @@ export namespace anchor {
         let result = await resp.json()
 
         if (!result?.data?.room) {
-          Log.log(TAG, `${basic.plat} 不存在该主播(${basic.idNew || basic.id})`)
+          console.log(TAG, `${basic.plat} 不存在该主播(${basic.idNew || basic.id})`)
           return new Status({
             name: `不存在："${basic.id}"`,
             liveUrl: "https://www.douyin.com/"
@@ -227,7 +227,7 @@ export namespace anchor {
         // 因为主播的房间号经常自动改变，不过返回的信息里有新的的房间号，所以新号码再次请求
         if (ownRoom && (basic.idNew || basic.id) !== ownRoom.room_ids_str[0]) {
           basic.idNew = result.data.room.owner.own_room.room_ids_str[0]
-          Log.debug(TAG, `抖音主播"${name}"的房间ID已更新为"${basic.idNew}"，将重新获取直播流`)
+          console.log(TAG, `抖音主播"${name}"的房间ID已更新为"${basic.idNew}"，将重新获取直播流`)
           // @ts-ignore
           return await StatusUtils[basic.plat].check(basic)
         }
@@ -303,11 +303,11 @@ export namespace anchor {
 
       // 是否已禁用功能
       if (data.anchors.enable === false) {
-        Log.log(TAG, "检测主播在播功能已关闭")
+        console.log(TAG, "检测主播在播功能已关闭")
         return
       }
       if (!data.anchors.list) {
-        Log.log(TAG, "主播列表为空，放弃检测是否在播")
+        console.log(TAG, "主播列表为空，放弃检测是否在播")
         return
       }
       this.monitorAnchors(data.anchors.list, enableNotify).then(online => {
@@ -341,7 +341,7 @@ export namespace anchor {
         // 此处同步检查每个主播的状态，所以用 await 等待，以免发送通知时重叠
         // @ts-ignore
         let status = await StatusUtils[basic.plat].check(basic).catch(e => {
-          Log.error(TAG, "获取主播信息时出错：", basic, e)
+          console.log(TAG, "获取主播信息时出错：", basic, e)
         })
 
         // 获取信息时出错
@@ -352,13 +352,13 @@ export namespace anchor {
         let id = `${basic.plat}_${basic.id}`
         if (status.online === 1) {
           online++
-          Log.debug(TAG, `主播"${status.name}"(${basic.id}) 在线`)
+          console.log(TAG, `主播"${status.name}"(${basic.id}) 在线`)
 
           // 需要发送通知
           if (enableNotify) {
             // 主播开播发送提醒后，一直到停播，期间都不需要发送提醒
             if (hadNotify.has(id)) {
-              Log.debug(TAG, `本次"${status.name}"(${basic.id})的开播已提醒，此次不再提醒`)
+              console.log(TAG, `本次"${status.name}"(${basic.id})的开播已提醒，此次不再提醒`)
               continue
             }
             let ops: chrome.notifications.NotificationOptions = {
@@ -378,7 +378,7 @@ export namespace anchor {
             hadNotify.add(id)
           }
         } else {
-          Log.debug(TAG, `主播"${status.name}"(${basic.id}) 未在线`)
+          console.log(TAG, `主播"${status.name}"(${basic.id}) 未在线`)
           // 移除过期的通知记录
           hadNotify.delete(id)
         }

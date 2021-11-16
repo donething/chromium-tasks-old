@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {Button, Card, Input, message, Modal, Popconfirm, Upload} from "antd"
 import {UploadOutlined} from '@ant-design/icons'
-import {download, Log} from "../../comm/utils"
+import {download} from "../../comm/utils"
 import './Options.css'
 import {delRevoke} from "../../comm/antd"
 
@@ -24,7 +24,7 @@ function WXToken(): JSX.Element {
   useEffect(() => {
     // 读取存储的数据，显示
     chrome.storage.sync.get({wxToken: {}}).then(data => {
-      Log.debug("读取存储的微信 Token")
+      console.log("读取存储的微信 Token")
       if (data.wxToken) {
         setAppid(data.wxToken.appid)
         setSecret(data.wxToken.secret)
@@ -54,7 +54,7 @@ function WXToken(): JSX.Element {
             return
           }
           chrome.storage.sync.set({wxToken: token}, () => {
-            Log.debug("已保存 微信测试号推送的 Token")
+            console.log("已保存 微信测试号推送的 Token")
             message.success("已保存 微信测试号的推送 Token")
           })
         }}>保存 Token
@@ -70,13 +70,13 @@ function WXToken(): JSX.Element {
 
             // 保存到 chromium storage
             chrome.storage.sync.remove("wxToken").then(() => {
-              Log.debug("已删除 微信测试号的推送 Token")
+              console.log("已删除 微信测试号的推送 Token")
               message.warn("已删除 微信测试号的推送 Token")
             })
           }, (data) => {
             // 撤销删除，恢复数据到 chromium storage 中
             chrome.storage.sync.set({wxToken: data}, () => {
-              Log.debug("已保存 微信测试号的推送 Token")
+              console.log("已保存 微信测试号的推送 Token")
               message.success("已保存 微信测试号的推送 Token")
             })
 
@@ -108,7 +108,7 @@ function TGToken(): JSX.Element {
   useEffect(() => {
     // 读取存储的数据，显示
     chrome.storage.sync.get({tgToken: {}}).then(data => {
-      Log.debug("读取存储的TG Token")
+      console.log("读取存储的TG Token")
       if (data.tgToken) {
         setPicChatID(data.tgToken.picChatID)
         setPicToken(data.tgToken.picChatID)
@@ -132,7 +132,7 @@ function TGToken(): JSX.Element {
             return
           }
           chrome.storage.sync.set({tgToken: token}, () => {
-            Log.debug("已保存 TG机器人的推送 Token")
+            console.log("已保存 TG机器人的推送 Token")
             message.success("已保存 TG机器人的推送 Token")
           })
         }}>保存 Token
@@ -146,13 +146,13 @@ function TGToken(): JSX.Element {
 
             // 保存到 chromium storage
             chrome.storage.sync.remove("tgToken").then(() => {
-              Log.debug("已删除 TG机器人的推送 Token")
+              console.log("已删除 TG机器人的推送 Token")
               message.warn("已删除 TG机器人的推送 Token")
             })
           }, (data) => {
             // 撤销删除，恢复到 chromium storage
             chrome.storage.sync.set({tgToken: data}, () => {
-              Log.debug("已保存 TG机器人的推送 Token")
+              console.log("已保存 TG机器人的推送 Token")
               message.success("已保存 TG机器人的推送 Token")
             })
 

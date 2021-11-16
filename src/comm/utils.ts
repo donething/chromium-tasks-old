@@ -1,23 +1,3 @@
-// 打印日志
-const isDebug = true
-export const Log = {
-  // 调试模式下，才输出的信息
-  debug: function (...params: any) {
-    if (isDebug) {
-      console.log(...params)
-    }
-  },
-  error: function (...params: any) {
-    console.error(...params)
-  },
-  log: function (...params: any) {
-    console.log(...params)
-  },
-  warn: function (...params: any) {
-    console.warn(...params)
-  }
-}
-
 /**
  * 获取当前网页中正在播放的占用最大面积的视频元素
  * @param doc 文档

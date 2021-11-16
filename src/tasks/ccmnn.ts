@@ -1,4 +1,4 @@
-import {gbk2UTF8, Log, notify, random, sleep} from "../comm/utils"
+import {gbk2UTF8, notify, random, sleep} from "../comm/utils"
 import cheerio from "cheerio"
 
 /**
@@ -183,7 +183,7 @@ export const CCmnn = {
         let idstr = $(item).closest("tbody").attr("id")
         if (!idstr) {
           notify({title: this.TAG, message: "无法提取到帖子的ID"})
-          Log.log(this.TAG, "无法提取到帖子的ID", text)
+          console.log(this.TAG, "无法提取到帖子的ID", text)
           return
         }
         let id = idstr.substring(idstr.indexOf("_") + 1)

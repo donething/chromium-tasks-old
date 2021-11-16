@@ -1,5 +1,5 @@
 // 应用的工具类
-import {date, Log, notify} from "../../../comm/utils"
+import {date, notify} from "../../../comm/utils"
 import {WXPush} from "../../../comm/wxpush"
 
 export namespace app {
@@ -146,11 +146,11 @@ export namespace app {
       // 获取 chromium 存储的数据
       let data = await chrome.storage.sync.get({apps: {}})
       if (data.apps.enable === false) {
-        Log.log(TAG, "检测应用价格功能已关闭")
+        console.log(TAG, "检测应用价格功能已关闭")
         return
       }
       if (!data.apps.list) {
-        Log.log(TAG, "应用列表为空，放弃检测价格")
+        console.log(TAG, "应用列表为空，放弃检测价格")
         return
       }
 
@@ -159,7 +159,7 @@ export namespace app {
         // 根据平台选择获取信息的方法
         // @ts-ignore
         let status = await StatusUtils[basic.plat].check(basic).catch(e => {
-          Log.error(TAG, "获取应用信息出错：", basic, e)
+          console.error(TAG, "获取应用信息出错：", basic, e)
         })
 
         // 获取信息时出错
@@ -169,12 +169,12 @@ export namespace app {
 
         // 应用还没有免费
         if (status.price !== 0) {
-          Log.debug(TAG, `关注的应用"${status.name}"(${basic.id})的价格：${status.formattedPrice}`)
+          console.log(TAG, `关注的应用"${status.name}"(${basic.id})的价格：${status.formattedPrice}`)
           continue
         }
 
         // 应用已免费，发送通知
-        Log.debug(TAG, `关注的应用"${status.name}"(${status.trackId}) 已免费`)
+        console.log(TAG, `关注的应用"${status.name}"(${status.trackId}) 已免费`)
 
         let ops: chrome.notifications.NotificationOptions = {
           type: "basic",
@@ -196,9 +196,9 @@ export namespace app {
           `应用："${status.name}"\nID: ${status.trackId}`, date({}))
         let result = await wxPush.sandbox.pushTpl(wxPush.toUID, wxPush.tplID, data, status.viewURL)
         if (result.errcode === 0) {
-          Log.debug(TAG, "推送微信消息成功")
+          console.log(TAG, "推送微信消息成功")
         } else {
-          Log.error(TAG, "推送微信消息失败", result)
+          console.log(TAG, "推送微信消息失败", result)
         }
       }
     }

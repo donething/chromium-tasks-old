@@ -3,7 +3,7 @@ import {VPanel} from "./vpanel"
 import {Avatar, Button, message, Switch} from "antd"
 import {CloseOutlined} from "@ant-design/icons"
 import React, {useEffect, useState} from "react"
-import {insertOrdered, Log} from "../comm/utils"
+import {insertOrdered} from "../comm/utils"
 import {delItemRevoke} from "../comm/antd"
 import {OptionInput, OptionItem} from "./option_input"
 
@@ -44,7 +44,7 @@ type ListItemProps = {
 }
 // 生成列表项
 const ListItem = (props: ListItemProps): JSX.Element => {
-  Log.debug("ListItem：", props)
+  // console.log("ListItem：", props)
   return (
     <li className={"row align-center padding" +
     ` ${props.isMarked ? "is-marked" : ""} ${props.isNewAdded ? "is-new-added" : ""}`}>
@@ -106,7 +106,7 @@ export const ListAddComp = function <B, D>(title: string, key: string, width: nu
   useEffect(() => {
     // 读取存储的数据，显示
     chrome.storage.sync.get({[key]: {}}).then(data => {
-      Log.debug(`[${title}] 读取存储的数据：`, JSON.stringify(data[key]))
+      console.log(`[${title}] 读取存储的数据：`, JSON.stringify(data[key]))
       // 设置卡片头中开关的状态
       setSwCompact(data[key].compactMode !== false)
       setSwNo(data[key].enable_notify !== false)
@@ -118,7 +118,7 @@ export const ListAddComp = function <B, D>(title: string, key: string, width: nu
           // @ts-ignore
           const status = await statusUtils[basic.plat].check(basic)
           // @ts-ignore
-          Log.debug(`[${title}] 读取(${basic.plat} ${basic.id})的状态：`, JSON.stringify(status))
+          console.log(`[${title}] 读取(${basic.plat} ${basic.id})的状态：`, JSON.stringify(status))
           // @ts-ignore
           let detail: D = {basic: basic, status: status}
           setInfosDetail(oldArray => insertOrdered(oldArray, detail, sortRule))
@@ -174,7 +174,7 @@ export const ListAddComp = function <B, D>(title: string, key: string, width: nu
                          )
                        }}
                        onSwitch={async (checked) => {
-                         Log.debug(`[${title}] "${props.name}"(${props.id})切换了检测状态：${checked}`)
+                         console.log(`[${title}] "${props.name}"(${props.id})切换了检测状态：${checked}`)
                          // 切换检测开关
                          // @ts-ignore
                          detail.basic.enable = checked
@@ -222,15 +222,14 @@ export const ListAddComp = function <B, D>(title: string, key: string, width: nu
     // 保存到存储
     data[key].list.push(nItem)
     chrome.storage.sync.set({[key]: data[key]})
-    // @ts-ignore
-    Log.debug(`${key} 已添加项目`, JSON.stringify(nItem))
+    console.log(`${key} 已添加项目`, JSON.stringify(nItem))
     message.success("已添加新项目")
 
     // 获取信息详情以显示
     // @ts-ignore
     const status = await statusUtils[nItem.plat].check(nItem)
     // @ts-ignore
-    Log.debug(`[${title}] 读取(${nItem.plat} ${nItem.id})的状态：`, JSON.stringify(status))
+    console.log(`[${title}] 读取(${nItem.plat} ${nItem.id})的状态：`, JSON.stringify(status))
     // @ts-ignore
     let detail: D = {basic: nItem, status: status, isNewAdded: true}
     setInfosDetail(oldArray => insertOrdered(oldArray, detail, sortRule))

@@ -1,5 +1,4 @@
 import {Button, notification} from "antd"
-import {Log} from "./utils"
 
 /**
  * 删除数组中的元素，并提供撤销功能
@@ -29,7 +28,7 @@ export const delItemRevoke = function <T, V>(title: string,
   let deledInfos = infosNew.splice(iDelInfo, 1)
   // 更新界面数据
   update(infosNew)
-  Log.debug(`已删除项目："${title}"`)
+  console.log(`已删除项目："${title}"`)
 
   // 提供撤销功能
   let key = `open_${Date.now()}`
@@ -44,7 +43,7 @@ export const delItemRevoke = function <T, V>(title: string,
       infosRevoke.splice(iDelInfo, 0, deledInfos[0])
       update(infosRevoke)
       notification.close(key)
-      Log.debug(`已恢复项目："${title}"`)
+      console.log(`已恢复项目："${title}"`)
     }}>
       撤销删除
     </Button>
@@ -71,7 +70,7 @@ export const delRevoke = function <T>(title: string, data: T, remove: () => void
   // 开始正常删除信息（因为响应式，同时更新了界面）
   // 同时也要保存修改到 chromium storage
   remove()
-  Log.debug(`已删除项目："${title}"`)
+  console.log(`已删除项目："${title}"`)
 
   // 提供撤销功能
   let key = `open_${Date.now()}`
@@ -79,7 +78,7 @@ export const delRevoke = function <T>(title: string, data: T, remove: () => void
     <Button type="primary" onClick={() => {
       revoke(JSON.parse(deledData))
       notification.close(key)
-      Log.debug(`已恢复项目："${title}"`)
+      console.log(`已恢复项目："${title}"`)
     }}>
       撤销删除
     </Button>
