@@ -5,12 +5,6 @@ import {WXPush} from "../../../comm/wxpush"
 export namespace app {
   const TAG = "[Apps]"
 
-  // 已适配的平台
-  export enum Plat {
-    PlayStore = "playstore",
-    AppStore = "appstore"
-  }
-
   // 应用的基础信息
   export class Basic {
     // 应用所在的地区
