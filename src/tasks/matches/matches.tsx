@@ -1,6 +1,6 @@
 import {VPanel} from "../../components/vpanel"
 import {useEffect, useRef, useState} from "react"
-import {day, scrollIntoView} from "../../comm/utils"
+import {day, scrollIntoView} from "do-utils/dist/utils"
 import {Avatar, message} from "antd"
 import {Element} from "cheerio"
 import "./matches.css"

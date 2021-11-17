@@ -2,7 +2,7 @@ import {anchor} from "../tasks/attention/libs/anchors"
 import {app} from "../tasks/attention/libs/apps"
 import {HDSay} from "../tasks/hdsay"
 import {CCmnn} from "../tasks/ccmnn"
-import {random} from "../comm/utils"
+import {random} from "do-utils/dist/utils"
 
 // CCmnn 的任务比较复杂，单独写规则
 const ccmnn = async function () {

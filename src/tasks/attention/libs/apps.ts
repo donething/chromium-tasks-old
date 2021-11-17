@@ -1,6 +1,6 @@
 // 应用的工具类
-import {date, notify} from "../../../comm/utils"
-import {WXPush} from "../../../comm/wxpush"
+import {date, notify} from "do-utils/dist/utils"
+import {WXPush} from "do-utils/dist/wxpush"
 
 export namespace app {
   const TAG = "[Apps]"

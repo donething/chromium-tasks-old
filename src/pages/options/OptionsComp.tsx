@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {Button, Card, Input, message, Modal, Popconfirm, Upload} from "antd"
 import {UploadOutlined} from '@ant-design/icons'
-import {download} from "../../comm/utils"
+import {download} from "do-utils/dist/utils"
 import './Options.css'
 import {delRevoke} from "../../comm/antd"
 

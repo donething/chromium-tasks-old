@@ -3,7 +3,7 @@ import {VPanel} from "./vpanel"
 import {Avatar, Button, message, Switch} from "antd"
 import {CloseOutlined} from "@ant-design/icons"
 import React, {useEffect, useState} from "react"
-import {insertOrdered} from "../comm/utils"
+import {insertOrdered} from "do-utils/dist/utils"
 import {delItemRevoke} from "../comm/antd"
 import {OptionInput, OptionItem} from "./option_input"
 

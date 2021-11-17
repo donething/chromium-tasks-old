@@ -1,4 +1,4 @@
-import {notify, random, sleep} from "../comm/utils"
+import {notify, random, sleep} from "do-utils/dist/utils"
 import {Element} from "cheerio"
 
 import cheerio from "cheerio"

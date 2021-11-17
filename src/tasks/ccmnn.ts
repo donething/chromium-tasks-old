@@ -1,4 +1,4 @@
-import {gbk2UTF8, notify, random, sleep} from "../comm/utils"
+import {gbk2UTF8, notify, random, sleep} from "do-utils/dist/utils"
 import cheerio from "cheerio"
 
 /**

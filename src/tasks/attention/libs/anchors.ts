@@ -1,4 +1,4 @@
-import {notify} from "../../../comm/utils"
+import {notify} from "do-utils/dist/utils"
 // HTML解析库
 const cheerio = require('cheerio')
 

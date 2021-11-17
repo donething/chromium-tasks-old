@@ -90,6 +90,3 @@ export const delRevoke = function <T>(title: string, data: T, remove: () => void
   }
   notification.open(options)
 }
-
-
-
