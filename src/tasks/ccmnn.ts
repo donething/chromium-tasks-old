@@ -200,8 +200,14 @@ export const CCmnn = {
         if (!countElem.text()) {
           continue
         }
+        // 奖励的次数
+        let count = parseInt(countElem.text())
+        if (isNaN(count)) {
+          console.log(this.TAG, `解析奖励次数出错：${countElem.text()}`)
+          continue
+        }
         // 根据次数领取奖励
-        for (let i = 0; i < parseInt(countElem.text() || "0"); i++) {
+        for (let i = 0; i < count; i++) {
           // floor++;
           let result = await this.reply(id, this.getContent())
           // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
