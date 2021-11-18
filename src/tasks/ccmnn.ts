@@ -49,7 +49,11 @@ export const CCmnn = {
     this.formhash = await this.getHash()
     if (this.formhash === "") {
       console.log(this.TAG, "获取formhash失败")
-      notify({title: this.TAG, message: "获取formhash失败，可打开控制台查看信息"})
+      notify({
+        title: this.TAG,
+        message: "获取formhash失败，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+      })
       return
     }
 
@@ -64,7 +68,12 @@ export const CCmnn = {
     } else if (signResult === 1) {
       console.log(this.TAG, `今日已经签过到`)
     } else {
-      let ops = {title: this.TAG, message: "签到失败，可打开控制台查看信息", buttons: [{title: "打开"}, {title: "取消"}]}
+      let ops = {
+        title: this.TAG,
+        message: "签到失败，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png"),
+        buttons: [{title: "打开"}, {title: "取消"}]
+      }
       notify(ops, [() => chrome.tabs.create({url: "https://club.ccmnn.com/"})])
       return
     }
@@ -182,7 +191,11 @@ export const CCmnn = {
 
         let idstr = $(item).closest("tbody").attr("id")
         if (!idstr) {
-          notify({title: this.TAG, message: "无法提取到帖子的ID"})
+          notify({
+            title: this.TAG,
+            message: "无法提取到帖子的ID",
+            iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+          })
           console.log(this.TAG, "无法提取到帖子的ID", text)
           return
         }
@@ -267,15 +280,27 @@ export const CCmnn = {
       }
     } else if (respStr.indexOf("含有非法字符") >= 0) {
       console.log(this.TAG, `回复帖子"${id}"失败：当前的访问请求当中含有非法字符，已经被系统拒绝`)
-      notify({title: this.TAG, message: "回帖失败，可打开控制台查看信息"})
+      notify({
+        title: this.TAG,
+        message: "回帖失败，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+      })
       return 10
     } else if (respStr.indexOf("登录后") >= 0) {
       console.log(this.TAG, `回复帖子"${id}"失败：需要登录（回复一次帖子）`)
-      notify({title: this.TAG, message: "回帖失败，可打开控制台查看信息"})
+      notify({
+        title: this.TAG,
+        message: "回帖失败，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+      })
       return 11
     } else {
       console.log(this.TAG, `回复帖子"${id}"失败："${respStr}"`)
-      notify({title: this.TAG, message: "回帖失败，可打开控制台查看信息"})
+      notify({
+        title: this.TAG,
+        message: "回帖失败，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+      })
       return 100
     }
   },

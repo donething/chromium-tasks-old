@@ -41,6 +41,7 @@ export const HDSay = {
       notify({
         title: this.TAG,
         message: "无法从cookie中获取到'XSRF-TOKEN'值",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png"),
         buttons: [{title: "打开网站"}, {title: "取消"}]
       }, [() => {
         chrome.tabs.create({url: "https://www.hdsay.net/"})
@@ -58,6 +59,7 @@ export const HDSay = {
       notify({
         title: this.TAG,
         message: "签到出错，需要手动签到一次，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png"),
         buttons: [{title: "打开网站"}, {title: "取消"}]
       }, [() => {
         chrome.tabs.create({url: "https://www.hdsay.net/member/sign"})
@@ -86,7 +88,8 @@ export const HDSay = {
           console.log(this.TAG, `提取帖子的链接出错`)
           notify({
             title: this.TAG,
-            message: "提取帖子的链接出错"
+            message: "提取帖子的链接出错",
+            iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
           })
           return
         }
@@ -222,6 +225,7 @@ export const HDSay = {
       notify({
         title: this.TAG,
         message: "回帖出错：可查看控制台的输出信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
       })
       return false
     }
@@ -235,6 +239,7 @@ export const HDSay = {
       notify({
         title: this.TAG,
         message: "回帖失败，可查看控制台的输出信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png"),
         buttons: [{title: "打开"}, {title: "取消"}]
       })
       return false
