@@ -3,8 +3,13 @@ import ListAddComp from "../../components/list_add_comp"
 import {anchor} from "./libs/anchors"
 import "./attentions.css"
 import {app} from "./libs/apps"
+import {useEffect} from "react"
 
 const AttentionComp = () => {
+  useEffect(() => {
+    document.title = `关注的 - ${chrome.runtime.getManifest().name}`
+  }, [])
+
   let anchors = ListAddComp("关注的主播", "anchors", 350,
     anchor.StatusUtils, (detail: anchor.Detail) => {
       return {

@@ -1,8 +1,12 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import './Popup.css'
 import {Button} from "antd"
 
 function PopupComp() {
+  useEffect(() => {
+    document.title = `弹出框 - ${chrome.runtime.getManifest().name}`
+  }, [])
+
   return (
     <div className="col" style={{backgroundColor: "#FFF"}}>
       <Button type="link" onClick={() =>

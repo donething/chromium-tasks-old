@@ -183,6 +183,8 @@ const MatchesComp = function (): JSX.Element {
   let REG_EIDS = /(全球总决赛)|(LPL)|(LCK)|(NEST)/
 
   useEffect(() => {
+    document.title = `比赛赛程 - ${chrome.runtime.getManifest().name}`
+
     loadBusyRef.current = true
     // 因为 scroll 事件会频繁触发，所以设置 setTimeout 避免多次获取赛程
     // 另外只使用 loadBusy 状态量时，如果网速过快--，起不了避免多次赛程的作用，所以另加 setTimeout 使用

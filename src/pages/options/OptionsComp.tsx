@@ -22,6 +22,8 @@ function WXToken(): JSX.Element {
 
   // 仅在组件被导入时读取数据，组件有变动（重新渲染）时不执行
   useEffect(() => {
+    document.title = `选项 - ${chrome.runtime.getManifest().name}`
+
     // 读取存储的数据，显示
     chrome.storage.sync.get({wxToken: {}}).then(data => {
       console.log("读取存储的微信 Token")

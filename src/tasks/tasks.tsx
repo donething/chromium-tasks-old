@@ -6,6 +6,8 @@ const TasksComp = () => {
   const [hdsay, setHdsay] = useState<{ [last: string]: string }>({})
 
   useEffect(() => {
+    document.title = `任务记录 - ${chrome.runtime.getManifest().name}`
+
     const init = async () => {
       setCcmnn((await chrome.storage.sync.get("ccmnn")).ccmnn)
       setHdsay((await chrome.storage.sync.get("hdsay")).hdsay)
