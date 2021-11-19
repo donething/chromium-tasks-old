@@ -168,7 +168,7 @@ export const BackupPanel = function ({
 
         <Popconfirm
           placement="bottom"
-          title="确定清除存储的配置"
+          title="确定清除存储的配置，不可恢复"
           onConfirm={async _ => {
             // 清空存储的配置
             await chrome.storage.sync.clear()
