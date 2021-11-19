@@ -10,8 +10,6 @@ export const CCmnn = {
   TAG: "[CCmnn视频]",
   TAG_EN: "ccmnn",
 
-  cheerio: require('cheerio'),
-
   // 一天内奖励回帖的次数
   MAX_REPLY_COUNT: 30,
 
@@ -38,16 +36,13 @@ export const CCmnn = {
   // 需要回帖获取奖励的版块
   areas: ["2", "42", "45", "46", "50", "53", "55", "56", "58", "63"],
 
-  // 表单验证
-  formhash: "",
-
   /**
    * 执行每项任务
    */
   startTask: async function () {
     // 先获取 formhash
-    this.formhash = await this.getHash()
-    if (this.formhash === "") {
+    let formhash = await this.getHash()
+    if (formhash === "") {
       console.log(this.TAG, "获取formhash失败")
       notify({
         title: this.TAG,
@@ -58,12 +53,12 @@ export const CCmnn = {
     }
 
     // 签到失败时，大概率是验证到期，需要登录，所以此次后续的回复等操作可以取消
-    let signResult = await this.sign()
+    let signResult = await this.sign(formhash)
     // 每天首次成功签到后，执行其它任务
     if (signResult === 0) {
       console.log(this.TAG, `签到成功，已完成签到任务`)
       // 其它任务
-      this.shuoshuo()
+      this.shuoshuo(formhash)
       this.viewSpaces()
     } else if (signResult === 1) {
       console.log(this.TAG, `今日已经签过到`)
@@ -104,7 +99,7 @@ export const CCmnn = {
         // 帖子的 ID
         let id = idstr.substring(idstr.indexOf("_") + 1)
 
-        let result = await this.reply(id, this.getContent())
+        let result = await this.reply(id, this.getContent(), formhash)
         // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
         if (result === 1) {
           continue
@@ -130,26 +125,12 @@ export const CCmnn = {
   },
 
   /**
-   * 获取formhash，签到、回复时需要携带
-   * @returns {Promise<String>}
-   */
-  getHash: async function () {
-    let hashResult = await fetch("https://club.ccmnn.com/")
-    let text = await hashResult.text()
-    let m = text.match(/<input.*?formhash.*?value="(\w+)"/)
-    if (m && m.length === 2) {
-      return m[1]
-    }
-    return ""
-  },
-
-  /**
    * 签到
-   * @return {Promise<Number>} 0 为签到成功；1 为已签过到；其它 为出错
+   * @return 签到结果：0 为签到成功；1 为已签过到；其它 为出错
    */
-  sign: async function () {
+  sign: async function (formhash: string): Promise<number> {
     let url = "https://club.ccmnn.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1"
-    let data = `formhash=${this.formhash}&qdxq=kx&qdmode=3&todaysay=&fastreply=0`
+    let data = `formhash=${formhash}&qdxq=kx&qdmode=3&todaysay=&fastreply=0`
     let ops = {
       method: "POST",
       headers: {
@@ -170,9 +151,13 @@ export const CCmnn = {
     }
   },
 
-  // 定时检查有奖励的帖子，回复（最多可回复2次，获取奖励）
+  /**
+   * 定时检查有奖励的帖子，回复获取奖励
+   * @param alarmName 定时任务名，以便发成致命错误时取消定时任务
+   */
   autoReply: async function (alarmName: string) {
     console.log(this.TAG, "开始回复有奖励的帖子")
+    let formhash = await this.getHash()
     let data = await chrome.storage.local.get({ccmnn_reward_ids: null})
     let ids = new Set(data.ccmnn_reward_ids)
 
@@ -222,7 +207,7 @@ export const CCmnn = {
         // 根据次数领取奖励
         for (let i = 0; i < count; i++) {
           // floor++;
-          let result = await this.reply(id, this.getContent())
+          let result = await this.reply(id, this.getContent(), formhash)
           // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
           if (result === 1) {
             break
@@ -245,15 +230,15 @@ export const CCmnn = {
 
   /**
    * 回复帖子
-   * @param {String} id 帖子的ID（184274）
-   * @param {String} content 回复内容
-   * @returns {Promise<Number>} 回复的结果，1：成功，2：阅读权限不够，10+：回帖失败
+   * @param id 帖子的ID（184274）
+   * @param content 回复内容
+   * @param formhash 表单formhash
+   * @return 回复的结果，1：成功，2：阅读权限不够，10+：回帖失败
    */
-  // @ts-ignore
-  reply: async function (id: string, content: string): Promise<number> {
+  reply: async function (id: string, content: string, formhash: string): Promise<number> {
     let url = "https://club.ccmnn.com/forum.php?mod=post&action=reply&fid=53&tid=" + id
       + "&extra=&replysubmit=yes&infloat=yes&handlekey=fastpost&inajax=1"
-    let data = `message=${content}&formhash=${this.formhash}&usesig=1&subject=`
+    let data = `message=${content}&formhash=${formhash}&usesig=1&subject=`
 
     let ops = {
       method: "POST",
@@ -263,8 +248,8 @@ export const CCmnn = {
       body: data
     }
     let resp = await fetch(url, ops)
-
     let respStr = gbk2UTF8(await resp.arrayBuffer())
+
     if (respStr.indexOf("回复发布成功") >= 0) {
       console.log(this.TAG, `回复帖子"${id}"成功`)
       return 0
@@ -276,8 +261,10 @@ export const CCmnn = {
       if (result && result.length >= 2) {
         console.log(this.TAG, `两次回帖间隔，还需要等待 ${result[1]} 秒`)
         await sleep((parseInt(result[1]) + 1) * 1000)
-        return await this.reply(id, content)
+        return await this.reply(id, content, formhash)
       }
+      console.log(this.TAG, "解析两次间隔时间出错：", respStr)
+      return 101
     } else if (respStr.indexOf("含有非法字符") >= 0) {
       console.log(this.TAG, `回复帖子"${id}"失败：当前的访问请求当中含有非法字符，已经被系统拒绝`)
       notify({
@@ -306,11 +293,11 @@ export const CCmnn = {
   },
 
   // 发表说说
-  shuoshuo: async function () {
+  shuoshuo: async function (formhash: string) {
     let url = "https://club.ccmnn.com/home.php?mod=spacecp&ac=doing&view=me"
     let data = "message=%5Bem%3A4%3A%5D%5Bem%3A5%3A%5D%B9%FD%BA%C3%C3%BF%D2%BB%CC%EC%A1%AD%A1%AD" +
       "&add=&addsubmit=true&refer=home.php%3Fmod%3Dspace%26uid%3D323248%26do%3Ddoing%26view%3Dme%26from%3Dspace" +
-      `&topicid=&formhash=${this.formhash}`
+      `&topicid=&formhash=${formhash}`
 
     let ops = {
       method: "POST",
@@ -339,17 +326,29 @@ export const CCmnn = {
 
   // 领取矿场金币
   gainMineCoin: async function () {
+    let formhash = await this.getHash()
     // 需要先访问矿场页面刷新才能领取矿场产生的金币
     let reUrl = "https://club.ccmnn.com/plugin.php?id=hux_miner:hux_miner&ac=re&" +
-      `formhash=${this.formhash}&t=${Math.random()}`
+      `formhash=${formhash}&t=${Math.random()}`
     await fetch(reUrl, {method: "POST"})
 
     // 领取金币
     let url = "https://club.ccmnn.com/plugin.php?id=hux_miner:hux_miner&ac=draw&" +
-      `formhash=${this.formhash}&t=${Math.random()}`
+      `formhash=${formhash}&t=${Math.random()}`
     let resp = await fetch(url, {method: "POST"})
     let text = gbk2UTF8(await resp.arrayBuffer())
-    console.log(this.TAG, "领取矿场金币：", text)
+
+    if (text.indexOf("最小单位还不满") < 0 && text.indexOf("操作成功") < 0) {
+      console.log(this.TAG, "领取矿场金币出错：", text)
+      notify({
+        title: this.TAG,
+        message: "领取矿场金币出错，可打开控制台查看信息",
+        iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+      })
+      return
+    }
+
+    console.log(this.TAG, "已领取矿场金币：", text)
   },
 
   /**
@@ -360,5 +359,19 @@ export const CCmnn = {
     let content = "%3A%7B_%3A%7B_" + this.replies[this.replyID % this.replies.length]
     this.replyID++
     return content
+  },
+
+  /**
+   * 获取 formhash，签到、回复时需要携带
+   * @returns 表单formhash
+   */
+  getHash: async function (): Promise<string> {
+    let hashResult = await fetch("https://club.ccmnn.com/")
+    let text = await hashResult.text()
+    let m = text.match(/<input.*?formhash.*?value="(\w+)"/)
+    if (m && m.length === 2) {
+      return m[1]
+    }
+    return ""
   }
 }
