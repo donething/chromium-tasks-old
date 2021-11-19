@@ -1,9 +1,6 @@
 import React, {useEffect, useState} from 'react'
-import {Button, Card, Input, message, Modal, Popconfirm, Upload} from "antd"
-import {UploadOutlined} from '@ant-design/icons'
-import {download} from "do-utils/dist/utils"
-import './Options.css'
-import {delRevoke} from "../../comm/antd"
+import {Button, Card, Input, message} from "antd"
+import {BackupPanel, delRevoke} from "../../comm/antd"
 
 // 微信 Token
 function WXToken(): JSX.Element {
@@ -169,85 +166,13 @@ function TGToken(): JSX.Element {
   )
 }
 
-// 导入、保存数据
-function DataPanel(): JSX.Element {
-  return (
-    <Card title="Chromium Storage" size="small" style={{width: 300}}>
-      <div className="col margin-v-sub">
-        <Upload beforeUpload={async file => {
-          // 解析数据
-          let data: { sync?: object, local?: object } = {}
-          let text = await file.text()
-          try {
-            data = JSON.parse(text)
-          } catch (e) {
-            console.log("导入数据出错，无法解析 JSON 文本：", e)
-            message.error("无法解析 JSON 文本")
-          }
-
-          // 分别恢复到 sync、local 存储
-          // @ts-ignore
-          await chrome.storage.sync.set(data.sync).then(message.success("已导入 需要同步的数据"))
-          // @ts-ignore
-          await chrome.storage.local.set(data.local).then(message.success("已导入 不需要同步的数据"))
-
-          // 刷新组件
-          window.location.reload()
-          // 取消上传文件的操作
-          return false
-        }}>
-          <Button type="primary" icon={<UploadOutlined/>}>从文件导入配置</Button>
-        </Upload>
-
-        <Button type="primary" onClick={async _ => {
-          // 读取数据
-          let sync = await chrome.storage.sync.get(null)
-          let local = await chrome.storage.local.get(null)
-          let data = {sync: sync, local: local}
-          Modal.info({
-            title: "Chromium Storage 存储的数据",
-            content: JSON.stringify(data),
-            maskClosable: true,
-            bodyStyle: {height: 450, overflow: "auto"}
-          })
-        }}>浏览配置</Button>
-
-        <Button type="primary" onClick={async _ => {
-          // 读取数据
-          let sync = await chrome.storage.sync.get(null)
-          let local = await chrome.storage.local.get(null)
-          let data = {sync: sync, local: local}
-
-          // 下载
-          download(data, "chromium-task.json")
-        }}>下载配置</Button>
-
-        <Popconfirm
-          placement="bottom"
-          title="确定清除存储的配置"
-          onConfirm={async _ => {
-            // 清空存储的配置
-            await chrome.storage.sync.clear()
-            await chrome.storage.local.clear()
-            // 刷新组件
-            window.location.reload()
-          }}
-          okText="确定清除"
-          cancelText="取消">
-          <Button type="primary" danger>清空配置</Button>
-        </Popconfirm>
-      </div>
-    </Card>
-  )
-}
-
 // 选项页
 function OptionsComp() {
   return (
     <div className="row wrap">
       <WXToken/>
       <TGToken/>
-      <DataPanel/>
+      <BackupPanel/>
     </div>
   )
 }

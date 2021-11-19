@@ -5,9 +5,9 @@ import reportWebVitals from './reportWebVitals'
 import OptionsComp from './pages/options/OptionsComp'
 import PopupComp from './pages/popup/PopupComp'
 import AttentionComp from "./tasks/attention/attentions"
-import './comm/global.css'
 import MatchesComp from "./tasks/matches/matches"
 import TasksComp from "./tasks/tasks"
+import './index.css'
 
 ReactDOM.render(
   <React.StrictMode>

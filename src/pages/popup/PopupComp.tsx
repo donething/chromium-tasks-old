@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react'
-import './Popup.css'
 import {Button} from "antd"
 
 function PopupComp() {

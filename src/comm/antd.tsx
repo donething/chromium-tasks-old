@@ -1,4 +1,8 @@
-import {Button, notification} from "antd"
+import {Button, Card, message, Modal, notification, Popconfirm, Upload} from "antd"
+import {UploadOutlined} from "@ant-design/icons"
+import {download} from "do-utils"
+import React, {CSSProperties} from "react"
+import {CardSize} from "antd/es/card"
 
 /**
  * 删除数组中的元素，并提供撤销功能
@@ -56,6 +60,7 @@ export const delItemRevoke = function <T, V>(title: string,
   notification.open(options)
 }
 
+
 /**
  * 删除项目，并提供撤销功能
  * @param title 已删除元素的标题（如主播的房间名），不需要完整提示（如“已删除，是否撤销”）
@@ -89,4 +94,94 @@ export const delRevoke = function <T>(title: string, data: T, remove: () => void
     message: "是否撤销删除", description: `已删除项目：${title}`, key: key, btn: btn
   }
   notification.open(options)
+}
+
+
+// 备份、导入 chromium storage 数据的属性
+type BackupPanelProps = {
+  // 保存配置到本地时的文件名
+  filename?: string
+  // 卡片的标题
+  title?: string
+  // 卡片的尺寸
+  size?: CardSize
+  // 卡片的样式
+  style?: CSSProperties
+}
+// 备份、导入 chromium storage 数据
+export const BackupPanel = function ({
+                                       filename = chrome.runtime.getManifest().name + ".json",
+                                       title = "Chromium Storage",
+                                       size = "small",
+                                       style = {width: 300}
+                                     }: BackupPanelProps): JSX.Element {
+  return (
+    <Card title={title} size={size} style={style}>
+      <div className="col margin-v-sub">
+        <Upload beforeUpload={async file => {
+          // 解析数据
+          let data: { sync?: object, local?: object } = {}
+          let text = await file.text()
+          try {
+            data = JSON.parse(text)
+          } catch (e) {
+            console.log("导入数据出错，无法解析 JSON 文本：", e)
+            message.error("无法解析 JSON 文本")
+          }
+
+          // 分别恢复到 sync、local 存储
+          // @ts-ignore
+          await chrome.storage.sync.set(data.sync).then(message.success("已导入 需要同步的数据"))
+          // @ts-ignore
+          await chrome.storage.local.set(data.local).then(message.success("已导入 不需要同步的数据"))
+
+          // 刷新组件
+          window.location.reload()
+          // 取消上传文件的操作
+          return false
+        }}>
+          <Button type="primary" icon={<UploadOutlined/>}>从文件导入配置</Button>
+        </Upload>
+
+        <Button type="primary" onClick={async _ => {
+          // 读取数据
+          let sync = await chrome.storage.sync.get(null)
+          let local = await chrome.storage.local.get(null)
+          let data = {sync: sync, local: local}
+          Modal.info({
+            title: `${title} 存储的数据`,
+            content: JSON.stringify(data),
+            maskClosable: true,
+            bodyStyle: {height: 450, overflow: "auto"}
+          })
+        }}>浏览配置</Button>
+
+        <Button type="primary" onClick={async _ => {
+          // 读取数据
+          let sync = await chrome.storage.sync.get(null)
+          let local = await chrome.storage.local.get(null)
+          let data = {sync: sync, local: local}
+
+          // 下载
+          download(data, filename)
+        }}>下载配置</Button>
+
+        <Popconfirm
+          placement="bottom"
+          title="确定清除存储的配置"
+          onConfirm={async _ => {
+            // 清空存储的配置
+            await chrome.storage.sync.clear()
+            await chrome.storage.local.clear()
+            // 刷新组件
+            window.location.reload()
+          }}
+          okText="确定清除"
+          cancelText="取消"
+          okButtonProps={{danger: true}}>
+          <Button type="primary" danger>清空配置</Button>
+        </Popconfirm>
+      </div>
+    </Card>
+  )
 }
