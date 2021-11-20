@@ -164,7 +164,7 @@ export const BackupPanel = function ({
 
           // 下载
           download(data, filename)
-        }}>下载配置</Button>
+        }} style={{marginBottom: 30}}>下载配置</Button>
 
         <Popconfirm
           placement="bottom"
