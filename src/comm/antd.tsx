@@ -140,10 +140,10 @@ export const BackupPanel = function ({
           // 取消上传文件的操作
           return false
         }}>
-          <Button type="primary" icon={<UploadOutlined/>}>从文件导入配置</Button>
+          <Button icon={<UploadOutlined/>}>从文件导入配置</Button>
         </Upload>
 
-        <Button type="primary" onClick={async _ => {
+        <Button onClick={async _ => {
           // 读取数据
           let sync = await chrome.storage.sync.get(null)
           let local = await chrome.storage.local.get(null)
@@ -156,7 +156,7 @@ export const BackupPanel = function ({
           })
         }}>浏览配置</Button>
 
-        <Button type="primary" onClick={async _ => {
+        <Button onClick={async _ => {
           // 读取数据
           let sync = await chrome.storage.sync.get(null)
           let local = await chrome.storage.local.get(null)
