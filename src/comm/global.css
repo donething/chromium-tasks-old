@@ -486,6 +486,7 @@ hr {
 /* 信息的父元素，因为 absolute 布局的父元素必须非 static 布局 */
 .mask {
   position: relative;
+  z-index: -100;
 }
 
 /* 视频的信息 */
