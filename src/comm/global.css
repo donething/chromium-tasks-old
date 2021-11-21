@@ -13,7 +13,8 @@ a {
   color: #222;
 }
 
-a:hover {
+/* 悬浮时变色 */
+.hover:hover, a:hover {
   color: #40a9ff;
 }
 
