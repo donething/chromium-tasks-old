@@ -4,7 +4,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color: #e2e2e2;
+  /*background-color: #e2e2e2;*/
 }
 
 /* 链接 */
@@ -27,6 +27,10 @@ ul, li {
 /* 图片：避免超出父容器 */
 img {
   max-width: 100%;
+}
+
+hr {
+  opacity: 0.3;
 }
 
 /* 底部边框 */
@@ -200,11 +204,6 @@ img {
 /* 额外信息：更浅色文字 */
 .post-extra {
   color: #ccc;
-}
-
-/* 文本：最多两行 */
-.lines-2 {
-  display: inline-block;
 }
 
 /* 文本：一行，溢出部分不显示 */
@@ -479,4 +478,23 @@ img {
 
 .is-new-added {
   background: rgba(255, 255, 0, 0.3);
+}
+
+/* 鼠标悬浮在目标上时显示详细信息 */
+/* 配合 onmouseenter、onmouseleave 事件，设置 meta 元素的"display"属性实现 */
+/* 信息的父元素，因为 absolute 布局的父元素必须非 static 布局 */
+.mask {
+  position: relative;
+}
+
+/* 视频的信息 */
+.meta {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  color: #e5e9ef;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-size: 10px;
+  padding-left: 3px;
 }
