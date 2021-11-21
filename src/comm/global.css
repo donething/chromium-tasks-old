@@ -31,6 +31,7 @@ img {
 }
 
 hr {
+  height: 0;
   opacity: 0.3;
 }
 
@@ -479,6 +480,16 @@ hr {
 
 .is-new-added {
   background: rgba(255, 255, 0, 0.3);
+}
+
+/* 滚动中需要固定在顶部的元素 */
+.sticky {
+  position: sticky;
+  top: 0;
+  padding: 3px 0;
+  font-weight: bold;
+  background: #FFFFFF;
+  color: rgba(0, 0, 0, 0.85);
 }
 
 /* 鼠标悬浮在目标上时显示详细信息 */
