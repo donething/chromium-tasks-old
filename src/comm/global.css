@@ -486,6 +486,8 @@ hr {
 .sticky {
   position: sticky;
   top: 0;
+  /* 必要，否则会被下面的 class .mask 的元素挡住 */
+  z-index: 1000;
   padding: 3px 0;
   font-weight: bold;
   background: #FFFFFF;
