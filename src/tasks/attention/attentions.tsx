@@ -1,7 +1,6 @@
 // 关注组件
 import ListAddComp from "../../components/list_add_comp"
 import {anchor} from "./libs/anchors"
-import "./attentions.css"
 import {app} from "./libs/apps"
 import {useEffect} from "react"
 

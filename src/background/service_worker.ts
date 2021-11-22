@@ -29,7 +29,7 @@ chrome.alarms.onAlarm.addListener(async alarm => {
   }
 })
 
-chrome.runtime.onStartup.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async () => {
   // 每3分钟执行任务
   chrome.alarms.create("threeMin", {delayInMinutes: 1, periodInMinutes: 3})
   // 每半小时执行任务
