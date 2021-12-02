@@ -1,6 +1,7 @@
 // 应用的工具类
 import {date, notify} from "do-utils/dist/utils"
 import {WXPush} from "do-utils/dist/wxpush"
+import {request} from "do-utils"
 
 export namespace app {
   const TAG = "[Apps]"
@@ -91,7 +92,7 @@ export namespace app {
       check: async (basic: Basic): Promise<Status> => {
         // 请求应用信息的数据
         let url = `https://itunes.apple.com/lookup?country=${basic.area}&id=${basic.id}`
-        let resp = await fetch(url)
+        let resp = await request(url)
         let result = await resp.json()
 
         // 解析信息

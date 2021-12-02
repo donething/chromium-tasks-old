@@ -60,6 +60,35 @@ export const delItemRevoke = function <T, V>(title: string,
   notification.open(options)
 }
 
+export const delItemRevoke2 = function <T>(title: string, data: Array<T>, ideled: number,
+                                           save: (data: Array<T>) => void) {
+  // 删除项目，返回的是数组
+  let tmp = [...data]
+  tmp.splice(ideled, 1)
+  // 保存修改到 chromium storage，以及使用 useState 的 set 函数更新界面
+  save(tmp)
+  console.log(`已删除项目："${title}"`)
+
+  // 提供撤销功能
+  let key = `open_${Date.now()}`
+  let btn = (
+    <Button type="primary" onClick={() => {
+      // 恢复数据，直接用传递过来的 data 恢复
+      save(data)
+
+      notification.close(key)
+      console.log(`已恢复项目："${title}"`)
+    }}>
+      撤销删除
+    </Button>
+  )
+
+  // 弹出撤销操作的通知
+  let options = {
+    message: "是否撤销删除", description: `已删除项目：${title}`, key: key, btn: btn
+  }
+  notification.open(options)
+}
 
 /**
  * 删除项目，并提供撤销功能

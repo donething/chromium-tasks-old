@@ -22,13 +22,13 @@ function WXToken(): JSX.Element {
     document.title = `选项 - ${chrome.runtime.getManifest().name}`
 
     // 读取存储的数据，显示
-    chrome.storage.sync.get({wxToken: {}}).then(data => {
+    chrome.storage.sync.get({settings: {}}).then(data => {
       console.log("读取存储的微信 Token")
-      if (data.wxToken) {
-        setAppid(data.wxToken.appid)
-        setSecret(data.wxToken.secret)
-        setTplID(data.wxToken.tplID)
-        setToUID(data.wxToken.toUID)
+      if (data.settings.wxToken) {
+        setAppid(data.settings.wxToken.appid)
+        setSecret(data.settings.wxToken.secret)
+        setTplID(data.settings.wxToken.tplID)
+        setToUID(data.settings.wxToken.toUID)
       }
     })
   }, [])
@@ -47,20 +47,22 @@ function WXToken(): JSX.Element {
       </div>
 
       <div className="row justify-between margin-top-large">
-        <Button type="primary" onClick={_ => {
+        <Button type="primary" onClick={async _ => {
           if (!token.appid || !token.secret || !token.toUID || !token.tplID) {
             message.info("输入的信息中有部分为空")
             return
           }
-          chrome.storage.sync.set({wxToken: token}, () => {
+          let data = await chrome.storage.sync.get({settings: {}})
+          data.settings.wxToken = token
+          chrome.storage.sync.set({settings: data.settings}, () => {
             console.log("已保存 微信测试号推送的 Token")
             message.success("已保存 微信测试号的推送 Token")
           })
         }}>保存 Token
         </Button>
 
-        <Button type="primary" danger onClick={async _ => {
-          delRevoke("微信测试号的推送 Token", token, () => {
+        <Button type="primary" danger onClick={_ => {
+          delRevoke("微信测试号的推送 Token", token, async () => {
             // 删除输入框绑定的数据
             setAppid("")
             setSecret("")
@@ -68,22 +70,26 @@ function WXToken(): JSX.Element {
             setToUID("")
 
             // 保存到 chromium storage
-            chrome.storage.sync.remove("wxToken").then(() => {
+            let data = await chrome.storage.sync.get({settings: {}})
+            data.settings.wxToken = undefined
+            chrome.storage.sync.set({settings: data.settings.wxToken}).then(() => {
               console.log("已删除 微信测试号的推送 Token")
               message.warn("已删除 微信测试号的推送 Token")
             })
-          }, (data) => {
+          }, async (deledData) => {
             // 撤销删除，恢复数据到 chromium storage 中
-            chrome.storage.sync.set({wxToken: data}, () => {
+            let data = await chrome.storage.sync.get({settings: {}})
+            data.settings.wxToken = deledData
+            chrome.storage.sync.set({settings: data.wxToken}, () => {
               console.log("已保存 微信测试号的推送 Token")
               message.success("已保存 微信测试号的推送 Token")
             })
 
             // 恢复输入框绑定的数据
-            setAppid(data.appid)
-            setSecret(data.secret)
-            setTplID(data.tplID)
-            setToUID(data.toUID)
+            setAppid(deledData.appid)
+            setSecret(deledData.secret)
+            setTplID(deledData.tplID)
+            setToUID(deledData.toUID)
           })
         }}>删除 Token
         </Button>
@@ -106,11 +112,11 @@ function TGToken(): JSX.Element {
   // 仅在组件被导入时读取数据，组件有变动（重新渲染）时不执行
   useEffect(() => {
     // 读取存储的数据，显示
-    chrome.storage.sync.get({tgToken: {}}).then(data => {
+    chrome.storage.sync.get({settings: {tgToken: {}}}).then(data => {
       console.log("读取存储的TG Token")
-      if (data.tgToken) {
-        setPicChatID(data.tgToken.picChatID)
-        setPicToken(data.tgToken.picChatID)
+      if (data.settings.tgToken) {
+        setPicChatID(data.settings.tgToken.picChatID)
+        setPicToken(data.settings.tgToken.picToken)
       }
     })
   }, [])
@@ -125,39 +131,46 @@ function TGToken(): JSX.Element {
       </div>
 
       <div className="row justify-between margin-top-large">
-        <Button type="primary" onClick={_ => {
+        <Button type="primary" onClick={async _ => {
           if (!token.picChatID || !token.picToken) {
             message.info("输入的信息中有部分为空")
             return
           }
-          chrome.storage.sync.set({tgToken: token}, () => {
+
+          let data = await chrome.storage.sync.get({settings: {}})
+          data.settings.tgToken = token
+          chrome.storage.sync.set({settings: data.settings}, () => {
             console.log("已保存 TG机器人的推送 Token")
             message.success("已保存 TG机器人的推送 Token")
           })
         }}>保存 Token
         </Button>
 
-        <Button type="primary" danger onClick={async _ => {
-          delRevoke(`TG机器人的推送 Token`, token, () => {
+        <Button type="primary" danger onClick={_ => {
+          delRevoke(`TG机器人的推送 Token`, token, async () => {
             // 删除输入框绑定的数据
             setPicChatID("")
             setPicToken("")
 
             // 保存到 chromium storage
-            chrome.storage.sync.remove("tgToken").then(() => {
+            let data = await chrome.storage.sync.get({settings: {}})
+            data.settings.tgToken = undefined
+            chrome.storage.sync.set({settings: data.settings}).then(() => {
               console.log("已删除 TG机器人的推送 Token")
               message.warn("已删除 TG机器人的推送 Token")
             })
-          }, (data) => {
+          }, async (deleddata) => {
             // 撤销删除，恢复到 chromium storage
-            chrome.storage.sync.set({tgToken: data}, () => {
+            let data = await chrome.storage.sync.get({settings: {}})
+            data.settings.tgToken = token
+            chrome.storage.sync.set({settings: data.settings}, () => {
               console.log("已保存 TG机器人的推送 Token")
               message.success("已保存 TG机器人的推送 Token")
             })
 
             // 恢复输入框绑定的数据
-            setPicChatID(data.picChatID)
-            setPicToken(data.picToken)
+            setPicChatID(deleddata.picChatID)
+            setPicToken(deleddata.picToken)
           })
         }}>删除 Token
         </Button>

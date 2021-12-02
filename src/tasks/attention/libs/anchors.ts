@@ -1,4 +1,5 @@
 import {notify} from "do-utils/dist/utils"
+import {request} from "do-utils"
 // HTML解析库
 const cheerio = require('cheerio')
 
@@ -84,7 +85,7 @@ export namespace anchor {
        */
       check: async (basic: Basic): Promise<Status> => {
         // 解析数据
-        let resp = await fetch("https://open.douyucdn.cn/api/RoomApi/room/" + basic.id)
+        let resp = await request(`https://open.douyucdn.cn/api/RoomApi/room/${basic.id}`)
         let result = await resp.json()
 
         if (result === "Not Found") {
@@ -118,7 +119,7 @@ export namespace anchor {
        * @return 主播的详细信息
        */
       check: async (basic: Basic): Promise<Status> => {
-        let resp = await fetch(`https://www.huya.com/${basic.id}`)
+        let resp = await request(`https://www.huya.com/${basic.id}`)
         let text = await resp.text()
 
         if (text.indexOf("找不到这个主播") >= 0) {
@@ -166,16 +167,8 @@ export namespace anchor {
       check: async (basic: Basic): Promise<Status> => {
         // 该API请求不能包含cookie，所以请求头的"credentials"设为"omit"
         let url = "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids"
-        let data = {"uids": [basic.id]}
-        let ops: RequestInit = {
-          method: "POST",
-          credentials: "omit",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        }
-        let resp = await fetch(url, ops)
+        // 请求该 API 不能携带认证信息
+        let resp = await request(url, {"uids": [basic.id]}, {credentials: "omit"})
         let result = await resp.json()
 
         // 没有该主播的信息
@@ -212,7 +205,7 @@ export namespace anchor {
         // 优先以主播的新ID获取信息
         let url = "https://webcast-hl.amemv.com/webcast/room/reflow/info/?app_id=1128&live_id=1&room_id=" +
           (basic.idNew || basic.id)
-        let resp = await fetch(url)
+        let resp = await request(url)
         let result = await resp.json()
 
         if (!result?.data?.room) {

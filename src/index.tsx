@@ -8,6 +8,7 @@ import AttentionComp from "./tasks/attention/attentions"
 import MatchesComp from "./tasks/matches/matches"
 import TasksComp from "./tasks/tasks"
 import './index.css'
+import PicTaskComp from "./tasks/pics/pic_task_comp"
 
 ReactDOM.render(
   <React.StrictMode>
@@ -17,6 +18,7 @@ ReactDOM.render(
       <Route path="/attentions" component={AttentionComp}/>
       <Route path="/matches" component={MatchesComp}/>
       <Route path="/tasks" component={TasksComp}/>
+      <Route path="/pics" component={PicTaskComp}/>
     </Router>
   </React.StrictMode>,
   document.getElementById('root')

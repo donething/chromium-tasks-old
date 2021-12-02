@@ -19,7 +19,7 @@ export const VPanel = function (props: VPanelProps): JSX.Element {
     <div className="VPanel" style={props.style}>
       <div className="VPanel-header">
         <div className="VPanel-header-title">{props.title}</div>
-        <div>{props.slot}</div>
+        <div className="VPanel-header-slot margin-right">{props.slot}</div>
       </div>
       <div className="VPanel-content">
         {props.content}

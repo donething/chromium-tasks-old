@@ -10,13 +10,14 @@
     "128": "icons/extension_128.png"
   },
   "permissions": [
+    "tabs",
     "notifications",
     "storage",
     "alarms",
     "cookies"
   ],
   "host_permissions": [
-    "*://*/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "/static/js/service_worker.js"
@@ -24,6 +25,5 @@
   "action": {
     "default_popup": "/index.html#popup",
     "default_title": "Open the popup"
-  },
-  "options_page": "/index.html#options"
+  }
 }

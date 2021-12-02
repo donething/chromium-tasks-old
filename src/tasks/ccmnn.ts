@@ -1,5 +1,16 @@
 import {gbk2UTF8, notify, random, sleep} from "do-utils/dist/utils"
 import cheerio from "cheerio"
+import {request} from "do-utils"
+
+// 存储到 chromium storage sync 的数据：tasks.ccmnn
+export declare interface CcmnnSets {
+  // 最近一次运行日期
+  last: string
+  // 当日每日回帖任务已回复帖子的数量
+  replyCount: number
+  // 总回复次数，用于获取回复内容，以免连续回复相同的内容扣分
+  total: number
+}
 
 /**
  * club.ccmnn.com 视频的任务
@@ -7,11 +18,11 @@ import cheerio from "cheerio"
  * 使用：需先登录网站回复一个帖子，以保存请求头信息
  */
 export const CCmnn = {
-  TAG: "[CCmnn视频]",
+  TAG: "[CCmnn]",
   TAG_EN: "ccmnn",
 
   // 一天内奖励回帖的次数
-  MAX_REPLY_COUNT: 30,
+  MAX_REPLY_AWARD_COUNT: 30,
 
   // 每个回复的间隔时间（秒）
   wait: (30 + random(3, 5)) * 1000,
@@ -29,9 +40,6 @@ export const CCmnn = {
   ],
   // 5个用户的ID，用于浏览空间
   uidList: ["116019", "115615", "21666", "284924", "232773"],
-
-  // 依序选择回复内容
-  replyID: 0,
 
   // 需要回帖获取奖励的版块
   areas: ["2", "42", "45", "46", "50", "53", "55", "56", "58", "63"],
@@ -58,8 +66,9 @@ export const CCmnn = {
     if (signResult === 0) {
       console.log(this.TAG, `签到成功，已完成签到任务`)
       // 其它任务
-      this.shuoshuo(formhash)
-      this.viewSpaces()
+      // 避免被 阿里云CDN-waf自动防护 判断过于频繁，改为同步执行
+      await this.shuoshuo(formhash)
+      await this.viewSpaces()
     } else if (signResult === 1) {
       console.log(this.TAG, `今日已经签过到`)
     } else {
@@ -73,55 +82,8 @@ export const CCmnn = {
       return
     }
 
-    // 每日前几次回贴可领取金币
-    // 完成任务后，保存当天的的日期（如"2021/8/28"），以免一日内重复做任务
-    let data = await chrome.storage.sync.get({ccmnn: {}})
-    let last = data.ccmnn.last
-    if (new Date().toLocaleDateString() !== last) {
-      console.log(this.TAG, "开始执行每日回帖任务")
-      let resp = await fetch("https://club.ccmnn.com/forum-53-1.html")
-      let $ = cheerio.load(await resp.text())
-      let list = $("#threadlisttableid tbody").toArray()
-
-      // 网站每天只奖励前几次的回复
-      let count = 0
-      for (let item of list) {
-        let elem = $(item)
-        let idstr = elem.attr("id") || ""
-        // 不是帖子则跳过
-        if (elem.find("th > em").length === 0 || !idstr
-          || idstr.indexOf("thread") === -1) {
-          continue
-        }
-        // 帖子已有的回复数，转为数字后加上主楼
-        // let countText = item.querySelector(".num font").textContent;
-        // let floor = parseInt(countText) + 1;
-        // 帖子的 ID
-        let id = idstr.substring(idstr.indexOf("_") + 1)
-
-        let result = await this.reply(id, this.getContent(), formhash)
-        // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
-        if (result === 1) {
-          continue
-        } else if (result >= 10) {
-          break
-        }
-
-        count++
-        console.log(this.TAG, `已回复 ${count}/${this.MAX_REPLY_COUNT} 条帖子`)
-
-        // 判断是否已完成任务
-        if (count === this.MAX_REPLY_COUNT) {
-          break
-        }
-
-        await sleep(this.wait)
-      }
-      console.log(this.TAG, `已完成回贴任务`)
-      // 完成任务，设置日期标志
-      data.ccmnn.last = new Date().toLocaleDateString()
-      chrome.storage.sync.set({ccmnn: data.ccmnn})
-    }
+    // 每日回帖任务
+    await this.dailyReply(formhash)
   },
 
   /**
@@ -130,15 +92,7 @@ export const CCmnn = {
    */
   sign: async function (formhash: string): Promise<number> {
     let url = "https://club.ccmnn.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1"
-    let data = `formhash=${formhash}&qdxq=kx&qdmode=3&todaysay=&fastreply=0`
-    let ops = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: data
-    }
-    let resp = await fetch(url, ops)
+    let resp = await request(url, `formhash=${formhash}&qdxq=kx&qdmode=3&todaysay=&fastreply=0`)
     let respStr = gbk2UTF8(await resp.arrayBuffer())
 
     if (respStr.indexOf("签到成功") >= 0) {
@@ -152,18 +106,90 @@ export const CCmnn = {
   },
 
   /**
-   * 定时检查有奖励的帖子，回复获取奖励
-   * @param alarmName 定时任务名，以便发成致命错误时取消定时任务
+   * 每日回帖任务
    */
-  autoReply: async function (alarmName: string) {
-    console.log(this.TAG, "开始回复有奖励的帖子")
+  dailyReply: async function (formhash: string) {
+    console.log(this.TAG, "开始执行每日回帖任务")
+
+    // 每日前几次回贴可领取金币
+    // 完成任务后，保存当天的的日期（如"2021/8/28"），以免一日内重复做任务
+    let data = await chrome.storage.sync.get({tasks: {}})
+    let ccmnn: CcmnnSets = data.tasks.ccmnn || {}
+
+    // 为新的一天，设置当日初始化的数据
+    if (ccmnn.last !== new Date().toLocaleDateString()) {
+      ccmnn.last = new Date().toLocaleDateString()
+      ccmnn.replyCount = 0
+
+      let dataTasks = await chrome.storage.sync.get({tasks: {}})
+      dataTasks.tasks.ccmnn.last = ccmnn.last
+      dataTasks.tasks.ccmnn.replyCount = ccmnn.replyCount
+      chrome.storage.sync.set({tasks: dataTasks.tasks})
+    } else if (ccmnn.replyCount < this.MAX_REPLY_AWARD_COUNT) {
+      console.log(this.TAG, `继续上次(第${ccmnn.replyCount}条)回帖任务`)
+    }
+
+    // 当最近日期不是当日，或回帖数量不足时，执行任务
+    if (ccmnn.replyCount < this.MAX_REPLY_AWARD_COUNT) {
+      let resp = await request("https://club.ccmnn.com/forum-53-1.html")
+      let $ = cheerio.load(await resp.text())
+      let list = $("#threadlisttableid tbody").toArray()
+
+      // 网站每天只奖励前几次的回复
+      for (let item of list) {
+        let elem = $(item)
+        let idstr = elem.attr("id") || ""
+        // 不是帖子则跳过
+        if (elem.find("th > em").length === 0 || !idstr
+          || idstr.indexOf("thread") === -1) {
+          continue
+        }
+
+        // 帖子已有的回复数，转为数字后加上主楼
+        // let countText = item.querySelector(".num font").textContent;
+        // let floor = parseInt(countText) + 1;
+        // 帖子的 ID
+        let id = idstr.substring(idstr.indexOf("_") + 1)
+
+        let result = await this.reply(id, await this.getContent(), formhash)
+        // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
+        if (result === 1) {
+          continue
+        } else if (result >= 10) {
+          break
+        }
+
+        ccmnn.replyCount++
+        console.log(this.TAG, `已回复 ${ccmnn.replyCount}/${this.MAX_REPLY_AWARD_COUNT} 条帖子`)
+        // 保存进度到存储
+        let dataTasks = await chrome.storage.sync.get({tasks: {}})
+        dataTasks.tasks.ccmnn.replyCount = ccmnn.replyCount
+        chrome.storage.sync.set({tasks: dataTasks.tasks})
+
+        // 判断是否已完成任务
+        if (ccmnn.replyCount === this.MAX_REPLY_AWARD_COUNT) {
+          break
+        }
+
+        await sleep(this.wait)
+      }
+    }
+    console.log(this.TAG, "已完成每日回帖任务")
+  },
+
+  /**
+   * 定时检查有奖励的帖子，回复获取奖励
+   */
+  autoReplyAward: async function () {
+    console.log(this.TAG, "开始执行本次回复有奖励帖子的任务")
     let formhash = await this.getHash()
+
     let data = await chrome.storage.local.get({ccmnn_reward_ids: null})
     let ids = new Set(data.ccmnn_reward_ids)
 
     for (let area of this.areas) {
       // 读取、解析网页
-      let resp = await fetch(`https://club.ccmnn.com/forum-${area}-1.html`)
+      let resp = await request(`https://club.ccmnn.com/forum-${area}-1.html`)
       let text = gbk2UTF8(await resp.arrayBuffer())
       let $ = cheerio.load(text)
       let rewardItems = $("#threadlisttableid tr .xi1 strong").toArray()
@@ -185,13 +211,14 @@ export const CCmnn = {
           return
         }
         let id = idstr.substring(idstr.indexOf("_") + 1)
+
         if (ids.has(id)) {
           // console.log(this.TAG, `该奖励贴"${id}"之前已回复过`);
           continue
         }
 
         // 获取帖子详情页里回帖奖励的次数（1次还是2次）
-        let postContentResp = await fetch(`https://club.ccmnn.com/${id}-1.htm`)
+        let postContentResp = await request(`https://club.ccmnn.com/${id}-1.htm`)
         let doc = cheerio.load(await postContentResp.text())
         let countElem = doc("tr td.plc.ptm.pbm.xi1").find("b")
         // 可能是延时，实际该贴的奖励已领完，没有该标签
@@ -207,24 +234,25 @@ export const CCmnn = {
         // 根据次数领取奖励
         for (let i = 0; i < count; i++) {
           // floor++;
-          let result = await this.reply(id, this.getContent(), formhash)
+          let result = await this.reply(id, await this.getContent(), formhash)
           // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
           if (result === 1) {
             break
           } else if (result >= 10) {
             console.log(this.TAG, "自动回帖失败，退出")
-            chrome.alarms.clear(alarmName)
             return
           }
 
           await sleep(this.wait)
         }
 
-        // 记录已领取奖励的帖子ID
+        // 每回一个帖子都记录该已领取奖励帖子到 ID
+
         ids.add(id)
-        chrome.storage.local.set({ccmnn_reward_ids: Array.from(ids)})
       }
     }
+    // 保存到存储
+    chrome.storage.local.set({ccmnn_reward_ids: Array.from(ids)})
     console.log(this.TAG, "已完成本次回复有奖励帖子的任务")
   },
 
@@ -233,25 +261,28 @@ export const CCmnn = {
    * @param id 帖子的ID（184274）
    * @param content 回复内容
    * @param formhash 表单formhash
-   * @return 回复的结果，1：成功，2：阅读权限不够，10+：回帖失败
+   * @return 回复的结果，0：成功，1：阅读权限不够，10+：回帖失败
    */
   reply: async function (id: string, content: string, formhash: string): Promise<number> {
     let url = "https://club.ccmnn.com/forum.php?mod=post&action=reply&fid=53&tid=" + id
       + "&extra=&replysubmit=yes&infloat=yes&handlekey=fastpost&inajax=1"
     let data = `message=${content}&formhash=${formhash}&usesig=1&subject=`
-
-    let ops = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: data
+    let resp = await request(url, data).catch(e => console.log(`回帖"${id}"时出现网络错误，将重试：`, e))
+    if (!resp) {
+      // 网络错误，重试
+      return await this.reply(id, content, formhash)
     }
-    let resp = await fetch(url, ops)
+
     let respStr = gbk2UTF8(await resp.arrayBuffer())
 
     if (respStr.indexOf("回复发布成功") >= 0) {
       console.log(this.TAG, `回复帖子"${id}"成功`)
+
+      // 回复成功后，保存总回复数到存储
+      let data = await chrome.storage.sync.get({tasks: {}})
+      // 处理 total 可能不存在的情况
+      data.tasks.ccmnn.total = data.tasks.ccmnn.total ? ++data.tasks.ccmnn.total : 1
+      chrome.storage.sync.set({tasks: data.tasks})
       return 0
     } else if (respStr.indexOf("阅读权限不少于") >= 0) {
       console.log(this.TAG, `阅读权限不够打开帖子"${id}"，返回`)
@@ -299,16 +330,8 @@ export const CCmnn = {
       "&add=&addsubmit=true&refer=home.php%3Fmod%3Dspace%26uid%3D323248%26do%3Ddoing%26view%3Dme%26from%3Dspace" +
       `&topicid=&formhash=${formhash}`
 
-    let ops = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: data
-    }
-
     for (let i = 0; i < 5; i++) {
-      await fetch(url, ops)
+      await request(url, data)
       await sleep(random(1, 3) * 1000)
     }
     console.log(this.TAG, "已完成说说任务")
@@ -318,7 +341,7 @@ export const CCmnn = {
   viewSpaces: async function () {
     for (const uid of this.uidList) {
       let url = `https://club.ccmnn.com/home.php?mod=space&uid=${uid}`
-      await fetch(url)
+      await request(url)
       await sleep(random(1, 3) * 1000)
     }
     console.log(this.TAG, "已完成浏览空间的任务")
@@ -330,12 +353,12 @@ export const CCmnn = {
     // 需要先访问矿场页面刷新才能领取矿场产生的金币
     let reUrl = "https://club.ccmnn.com/plugin.php?id=hux_miner:hux_miner&ac=re&" +
       `formhash=${formhash}&t=${Math.random()}`
-    await fetch(reUrl, {method: "POST"})
+    await request(reUrl, {})
 
     // 领取金币
     let url = "https://club.ccmnn.com/plugin.php?id=hux_miner:hux_miner&ac=draw&" +
       `formhash=${formhash}&t=${Math.random()}`
-    let resp = await fetch(url, {method: "POST"})
+    let resp = await request(url, {})
     let text = gbk2UTF8(await resp.arrayBuffer())
 
     if (text.indexOf("最小单位还不满") < 0 && text.indexOf("操作成功") < 0) {
@@ -353,12 +376,12 @@ export const CCmnn = {
 
   /**
    * 获取回复的内容，以免连续回复相同的内容
-   * @return {String}
    */
-  getContent: function () {
-    let content = "%3A%7B_%3A%7B_" + this.replies[this.replyID % this.replies.length]
-    this.replyID++
-    return content
+  getContent: async function (): Promise<string> {
+    let data = await chrome.storage.sync.get({tasks: {}})
+    let total = data.tasks.ccmnn.total ? data.tasks.ccmnn.total++ : 0
+
+    return this.replies[total % this.replies.length]
   },
 
   /**
@@ -366,7 +389,7 @@ export const CCmnn = {
    * @returns 表单formhash
    */
   getHash: async function (): Promise<string> {
-    let hashResult = await fetch("https://club.ccmnn.com/")
+    let hashResult = await request("https://club.ccmnn.com/")
     let text = await hashResult.text()
     let m = text.match(/<input.*?formhash.*?value="(\w+)"/)
     if (m && m.length === 2) {

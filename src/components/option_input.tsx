@@ -22,7 +22,7 @@ type OptionInputProps = {
   size?: SizeType
   // 是否添加确认按钮，可为 ReactNode、文字，与"addonAfter"属性冲突
   enterButton?: boolean | ReactNode | string,
-  // 点击确认按钮后的回调函数，参数依次为：选择框中被选择的值、输入框的值、事件对象
+  // 点击确认按钮后的回调函数，参数依次为：输入框的值、选择框中被选择的值（为了兼容多选的情况，传递数组）、事件对象
   onSearch: (value: string, sList: Array<string>, event?: React.ChangeEvent<HTMLInputElement>
     | React.MouseEvent<HTMLElement>
     | React.KeyboardEvent<HTMLInputElement>) => void

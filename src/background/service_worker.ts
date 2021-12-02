@@ -2,7 +2,6 @@ import {anchor} from "../tasks/attention/libs/anchors"
 import {app} from "../tasks/attention/libs/apps"
 import {HDSay} from "../tasks/hdsay"
 import {CCmnn} from "../tasks/ccmnn"
-import {random} from "do-utils/dist/utils"
 
 // 监听定时
 chrome.alarms.onAlarm.addListener(async alarm => {
@@ -15,16 +14,18 @@ chrome.alarms.onAlarm.addListener(async alarm => {
       app.AppUtils.monitor()
       break
     case "halfhour":
+      console.log("开始执行每半小时周期的任务")
       // 领取矿场金币
       CCmnn.gainMineCoin()
       break
     case CCmnn.TAG_EN:
+      console.log(CCmnn.TAG, `开始执行"${CCmnn.TAG_EN}"周期的任务`)
       try {
-        await CCmnn.autoReply(CCmnn.TAG_EN)
+        await CCmnn.autoReplyAward()
       } catch (e) {
         console.log(CCmnn.TAG, "自动回复奖励贴出错", e)
       }
-      chrome.alarms.create(CCmnn.TAG_EN, {delayInMinutes: random(2, 5)})
+      chrome.alarms.create(CCmnn.TAG_EN, {delayInMinutes: 1})
       break
   }
 })
@@ -34,6 +35,18 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.alarms.create("threeMin", {delayInMinutes: 1, periodInMinutes: 3})
   // 每半小时执行任务
   chrome.alarms.create("halfhour", {delayInMinutes: 1, periodInMinutes: 30})
+})
+
+
+// 每次运行浏览器时执行
+chrome.runtime.onStartup.addListener(async () => {
+  // 因为 manifest mv3 对 service worker 的运行时间有限制，所以打开一个扩展页面绕过限制
+  chrome.tabs.query({url: `chrome-extension://${chrome.runtime.id}/*`}, tabs => {
+    if (tabs.length === 0) {
+      console.log("打开扩展页面，绕过 service worker 的运行时间限制")
+      chrome.tabs.create({url: "/index.html#/tasks"})
+    }
+  })
 
   // hdsay
   HDSay.startTask()

@@ -35,6 +35,22 @@ hr {
   opacity: 0.3;
 }
 
+/* 四边边框 */
+.border {
+  border: 1px rgba(0, 0, 0, 0.08) solid;
+}
+
+/* 左右边框 */
+.border-h {
+  border-left: 1px rgba(0, 0, 0, 0.08) solid;
+  border-right: 1px rgba(0, 0, 0, 0.08) solid;
+}
+
+/* 顶部边框 */
+.border-top {
+  border-top: 1px rgba(0, 0, 0, 0.08) solid;
+}
+
 /* 底部边框 */
 .border-bottom {
   border-bottom: 1px rgba(0, 0, 0, 0.08) solid;
@@ -186,26 +202,27 @@ hr {
 .post-title {
   font-weight: bold;
   color: #333;
-  line-height: 2em;
+  line-height: 2;
 }
 
 /* 内容：深色文字 */
 .post-content {
   color: #222;
   word-break: break-word;
-  line-height: 1.8em;
+  line-height: 1.8;
 }
 
 /* 描述：浅色文字 */
 .post-description {
   color: #555;
   word-break: break-word;
-  line-height: 1.8em;
+  line-height: 1.8;
 }
 
 /* 额外信息：更浅色文字 */
 .post-extra {
   color: #ccc;
+  line-height: 1.5;
 }
 
 /* 文本：一行，溢出部分不显示 */
@@ -221,6 +238,18 @@ hr {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal;
+}
+
+/* 文本：最多两行 */
+.lines-2 {
+  line-height: 1.8;
+  max-height: 3.6em;
+}
+
+/* 文本：最多三行 */
+.lines-3 {
+  line-height: 1.8em;
+  max-height: 5.4em;
 }
 
 /* 宽度：和父容器等宽（100%） */
@@ -281,12 +310,6 @@ hr {
 .avatar-text {
   width: 16px;
   height: 16px;
-}
-
-/* 文本：最多两行 */
-.lines-2 {
-  line-height: 1.8em;
-  max-height: 3.6em;
 }
 
 /* 元素的内边距 */
@@ -499,7 +522,6 @@ hr {
 /* 信息的父元素，因为 absolute 布局的父元素必须非 static 布局 */
 .mask {
   position: relative;
-  z-index: -100;
 }
 
 /* 视频的信息 */
@@ -512,4 +534,25 @@ hr {
   background-color: rgba(0, 0, 0, 0.5);
   font-size: 10px;
   padding-left: 3px;
+}
+
+/* 可点击的样式 */
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  color: #40a9ff;
+}
+
+.danger-text {
+  color: #dc3545;
+}
+
+.success-bg {
+  background: rgba(82, 196, 26, 0.5);
+}
+
+.fail-bg {
+  background: rgba(250, 173, 20, 0.5);
 }

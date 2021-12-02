@@ -1,4 +1,6 @@
 // 领取京东的京豆
+import {request} from "do-utils"
+
 export const JD = {
   TAG: "京豆",
 
@@ -11,7 +13,7 @@ export const JD = {
       "%22userAgent%22%3A%22-1%22,%22jda%22%3A%22-1%22,%22monitor_source%22%3A%22bean_m_bean_index%22%7D&" +
       "appid=ld&client=android&clientVersion=null&networkType=null&osVersion&uuid=null&" +
       `jsonp=jsonp_${Date.now()}_89861`
-    let resp = await fetch(url)
+    let resp = await request(url)
     let result = await resp.json()
     let dataStr = result.body.substring(result.body.indexOf("(") + 1, result.body.lastIndexOf(")"))
     let obj = JSON.parse(dataStr)
