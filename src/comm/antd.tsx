@@ -60,6 +60,13 @@ export const delItemRevoke = function <T, V>(title: string,
   notification.open(options)
 }
 
+/**
+ * 删除数组中的元素，并提供撤销功能
+ * @param title 已删除元素的标题（如主播的房间名），不需要完整提示（如“已删除，是否撤销”）
+ * @param  data 数据的数组，如 chromium storage 中存储的数组
+ * @param ideled 将被删除的数据在 data 中的索引
+ * @param save 保存修改到 chromium storage 的回调函数，也需要删除此useState()中数组中相应的信息
+ */
 export const delItemRevoke2 = function <T>(title: string, data: Array<T>, ideled: number,
                                            save: (data: Array<T>) => void) {
   // 删除项目，返回的是数组
