@@ -192,6 +192,11 @@ hr {
   align-content: space-around;
 }
 
+/* 在flex布局中排在前面 */
+.front {
+  order: -1000;
+}
+
 /* 作者：粗体、灰色文字 */
 .author {
   font-weight: bold;
@@ -545,7 +550,11 @@ hr {
   color: #40a9ff;
 }
 
-.danger-text {
+.success-text {
+  color: #52C41A;
+}
+
+.focus-text {
   color: #dc3545;
 }
 
@@ -555,4 +564,10 @@ hr {
 
 .fail-bg {
   background: rgba(250, 173, 20, 0.5);
+}
+
+/* 充满屏幕高度，不可滚动（里面的元素可滚动） */
+.vh100per {
+  height: 100vh;
+  overflow: hidden;
 }
