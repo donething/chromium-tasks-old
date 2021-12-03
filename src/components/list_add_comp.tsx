@@ -21,16 +21,16 @@ type ListItemProps = {
   nameMax: number
   // 项目的介绍
   title: string,
+  // 点击标题时的跳转地址
+  url: string
+  // 所在平台的图标
+  platIcon: string
   // 备注
   comment?: string,
   // 需要特殊标记（如在线、限免，背景变色）
   isMarked?: boolean
   // 是否为新添加的项（背景变色）
   isNewAdded?: boolean
-  // 点击标题时的跳转地址
-  url: string
-  // 所在平台的图标
-  platIcon: string
 
   // 是否为简洁模式
   compact: boolean
@@ -47,7 +47,7 @@ const ListItem = (props: ListItemProps): JSX.Element => {
   // console.log("ListItem：", props)
   return (
     <li className={"row align-center padding" +
-    ` ${props.isMarked ? "is-marked" : ""} ${props.isNewAdded ? "is-new-added" : ""}`}>
+      ` ${props.isMarked ? "is-marked" : ""} ${props.isNewAdded ? "is-new-added" : ""}`}>
       <Avatar src={props.icon} size={props.compact ? 18 : 32}/>
       <div className="col margin-left width-100per width-fill-remain">
         <div className="row">
