@@ -132,7 +132,7 @@ export const CCmnn = {
     // 当最近日期不是当日，或回帖数量不足时，执行任务
     if (ccmnn.replyCount < this.MAX_REPLY_AWARD_COUNT) {
       let resp = await request("https://club.ccmnn.com/forum-53-1.html")
-      let $ = cheerio.load(await resp.text())
+      let $ = cheerio.load(gbk2UTF8(await resp.arrayBuffer()))
       let list = $("#threadlisttableid tbody").toArray()
 
       // 网站每天只奖励前几次的回复
@@ -187,70 +187,70 @@ export const CCmnn = {
     let data = await chrome.storage.local.get({ccmnn_reward_ids: null})
     let ids = new Set(data.ccmnn_reward_ids)
 
-    for (let area of this.areas) {
-      // 读取、解析网页
-      let resp = await request(`https://club.ccmnn.com/forum-${area}-1.html`)
-      let text = gbk2UTF8(await resp.arrayBuffer())
-      let $ = cheerio.load(text)
-      let rewardItems = $("#threadlisttableid tr .xi1 strong").toArray()
+    nextPost:
+      for (let area of this.areas) {
+        // 读取、解析网页
+        let resp = await request(`https://club.ccmnn.com/forum-${area}-1.html`)
+        let text = gbk2UTF8(await resp.arrayBuffer())
+        let $ = cheerio.load(text)
+        let rewardItems = $("#threadlisttableid tr .xi1 strong").toArray()
 
-      // 遍历有回复奖励的帖子
-      for (let item of rewardItems) {
-        // 帖子已有的回复数，转为数字后加上主楼
-        // let countText = item.closest("tbody").querySelector(".num font").textContent;
-        // let floor = parseInt(countText) + 1;
+        // 遍历有回复奖励的帖子
+        for (let item of rewardItems) {
+          // 帖子已有的回复数，转为数字后加上主楼
+          // let countText = item.closest("tbody").querySelector(".num font").textContent;
+          // let floor = parseInt(countText) + 1;
 
-        let idstr = $(item).closest("tbody").attr("id")
-        if (!idstr) {
-          notify({
-            title: this.TAG,
-            message: "无法提取到帖子的ID",
-            iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
-          })
-          console.log(this.TAG, "无法提取到帖子的ID", text)
-          return
-        }
-        let id = idstr.substring(idstr.indexOf("_") + 1)
-
-        if (ids.has(id)) {
-          // console.log(this.TAG, `该奖励贴"${id}"之前已回复过`);
-          continue
-        }
-
-        // 获取帖子详情页里回帖奖励的次数（1次还是2次）
-        let postContentResp = await request(`https://club.ccmnn.com/${id}-1.htm`)
-        let doc = cheerio.load(await postContentResp.text())
-        let countElem = doc("tr td.plc.ptm.pbm.xi1").find("b")
-        // 可能是延时，实际该贴的奖励已领完，没有该标签
-        if (!countElem.text()) {
-          continue
-        }
-        // 奖励的次数
-        let count = parseInt(countElem.text())
-        if (isNaN(count)) {
-          console.log(this.TAG, `解析奖励次数出错：${countElem.text()}`)
-          continue
-        }
-        // 根据次数领取奖励
-        for (let i = 0; i < count; i++) {
-          // floor++;
-          let result = await this.reply(id, await this.getContent(), formhash)
-          // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
-          if (result === 1) {
-            break
-          } else if (result >= 10) {
-            console.log(this.TAG, "自动回帖失败，退出")
+          let idstr = $(item).closest("tbody").attr("id")
+          if (!idstr) {
+            notify({
+              title: this.TAG,
+              message: "无法提取到帖子的ID",
+              iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+            })
+            console.log(this.TAG, "无法提取到帖子的ID", text)
             return
           }
+          let id = idstr.substring(idstr.indexOf("_") + 1)
 
-          await sleep(this.wait)
+          if (ids.has(id)) {
+            // console.log(this.TAG, `该奖励贴"${id}"之前已回复过`)
+            continue
+          }
+
+          // 获取帖子详情页里回帖奖励的次数（1次还是2次）
+          let postContentResp = await request(`https://club.ccmnn.com/${id}-1.htm`)
+          let doc = cheerio.load(gbk2UTF8(await postContentResp.arrayBuffer()))
+          let rewardText = doc("tr td.plc.ptm.pbm.xi1").text()
+
+          // 解析奖励的次数，剩余次数
+          let reg = rewardText.match(/上限\s+(\d+)\s+次.*还剩(\d+)次/)
+          if (!reg || reg.length < 3) {
+            console.log(this.TAG, `解析奖励次数出错："${rewardText}"`)
+            continue
+          }
+          console.log(this.TAG, `帖子"${id}"的奖励次数：${reg[1]}，总剩余次数：${reg[2]}`)
+
+          // 根据奖励次数回帖
+          for (let i = 0; i < parseInt(reg[1]); i++) {
+            // floor++;
+            let result = await this.reply(id, await this.getContent(), formhash)
+            // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
+            if (result === 1) {
+              break nextPost
+            } else if (result >= 10) {
+              console.log(this.TAG, "自动回帖失败，退出")
+              return
+            }
+
+            await sleep(this.wait)
+          }
+
+          // 每回一个帖子都记录该已领取奖励帖子到 ID
+
+          ids.add(id)
         }
-
-        // 每回一个帖子都记录该已领取奖励帖子到 ID
-
-        ids.add(id)
       }
-    }
     // 保存到存储
     chrome.storage.local.set({ccmnn_reward_ids: Array.from(ids)})
     console.log(this.TAG, "已完成本次回复有奖励帖子的任务")
@@ -390,7 +390,7 @@ export const CCmnn = {
    */
   getHash: async function (): Promise<string> {
     let hashResult = await request("https://club.ccmnn.com/")
-    let text = await hashResult.text()
+    let text = gbk2UTF8(await hashResult.arrayBuffer())
     let m = text.match(/<input.*?formhash.*?value="(\w+)"/)
     if (m && m.length === 2) {
       return m[1]
