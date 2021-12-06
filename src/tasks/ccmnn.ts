@@ -327,7 +327,7 @@ export const CCmnn = {
   shuoshuo: async function (formhash: string) {
     let url = "https://club.ccmnn.com/home.php?mod=spacecp&ac=doing&view=me"
     let data = "message=%5Bem%3A4%3A%5D%5Bem%3A5%3A%5D%B9%FD%BA%C3%C3%BF%D2%BB%CC%EC%A1%AD%A1%AD" +
-      "&add=&addsubmit=true&refer=%2Fhome.php%3Fmod%3Dspace%26do%3Ddoing%26view%3Dme&" +
+      "&add=&addsubmit=true&refer=home.php%3Fmod%3Dspace%26do%3Ddoing%26view%3Dme&" +
       `topicid=&formhash=${formhash}`
     for (let i = 0; i < 5; i++) {
       let resp = await request(url, data)

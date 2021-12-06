@@ -24,7 +24,7 @@ const TasksComp = () => {
       <Card title="Ccmnn" size="small" style={{width: 280}}
             extra={<div>
               <Button onClick={async () => {
-                message.info("已重启 Ccmnn 任务，还需在当前页打开 Devtools")
+                message.info("已重启 Ccmnn 任务，请打开 Devtools")
                 chrome.alarms.clear(CCmnn.TAG_EN)
                 // ccmnn
                 await CCmnn.startTask()
