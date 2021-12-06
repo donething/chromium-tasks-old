@@ -323,25 +323,46 @@ export const CCmnn = {
     }
   },
 
-  // 发表说说
+  // 发表说说（记录）
   shuoshuo: async function (formhash: string) {
     let url = "https://club.ccmnn.com/home.php?mod=spacecp&ac=doing&view=me"
     let data = "message=%5Bem%3A4%3A%5D%5Bem%3A5%3A%5D%B9%FD%BA%C3%C3%BF%D2%BB%CC%EC%A1%AD%A1%AD" +
-      "&add=&addsubmit=true&refer=home.php%3Fmod%3Dspace%26uid%3D323248%26do%3Ddoing%26view%3Dme%26from%3Dspace" +
-      `&topicid=&formhash=${formhash}`
-
+      "&add=&addsubmit=true&refer=%2Fhome.php%3Fmod%3Dspace%26do%3Ddoing%26view%3Dme&" +
+      `topicid=&formhash=${formhash}`
     for (let i = 0; i < 5; i++) {
-      await request(url, data)
-      await sleep(random(1, 3) * 1000)
+      let resp = await request(url, data)
+      let text = gbk2UTF8(await resp.arrayBuffer())
+      if (text.indexOf("论坛首页") === -1) {
+        console.log(this.TAG, "发表说说失败：", text)
+        notify({
+          title: this.TAG,
+          message: "发表说说失败，可打开控制台查看信息",
+          iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+        })
+        return
+      }
+
+      await sleep(random(32, 35) * 1000)
     }
     console.log(this.TAG, "已完成说说任务")
   },
 
-  // 查看别人的空间
+  // 访问别人的空间
   viewSpaces: async function () {
     for (const uid of this.uidList) {
       let url = `https://club.ccmnn.com/home.php?mod=space&uid=${uid}`
-      await request(url)
+      let resp = await request(url)
+      let text = gbk2UTF8(await resp.arrayBuffer())
+      if (text.indexOf("个人空间") === -1) {
+        console.log(this.TAG, "访问别人的空间失败：", text)
+        notify({
+          title: this.TAG,
+          message: "访问别人的空间失败，可打开控制台查看信息",
+          iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+        })
+        return
+      }
+
       await sleep(random(1, 3) * 1000)
     }
     console.log(this.TAG, "已完成浏览空间的任务")
