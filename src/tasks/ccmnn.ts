@@ -195,7 +195,7 @@ export const CCmnn = {
         let $ = cheerio.load(text)
         let rewardItems = $("#threadlisttableid tr .xi1 strong").toArray()
 
-        // 遍历有回复奖励的帖子
+        // 遍历该分区下有回复奖励的帖子
         for (let item of rewardItems) {
           // 帖子已有的回复数，转为数字后加上主楼
           // let countText = item.closest("tbody").querySelector(".num font").textContent;
@@ -232,7 +232,8 @@ export const CCmnn = {
           console.log(this.TAG, `帖子"${id}"的奖励次数：${reg[1]}，总剩余次数：${reg[2]}`)
 
           // 根据奖励次数回帖
-          for (let i = 0; i < parseInt(reg[1]); i++) {
+          let replyCount = 0
+          for (; ;) {
             // floor++;
             let result = await this.reply(id, await this.getContent(), formhash)
             // 当回帖失败的原因是阅读权限时继续回复下一个帖子；是其它原因时退出回帖
@@ -243,11 +244,16 @@ export const CCmnn = {
               return
             }
 
+            // 已完成次数
+            replyCount++
+            if (replyCount === parseInt(reg[1])) {
+              break
+            }
+
             await sleep(this.wait)
           }
 
           // 每回一个帖子都记录该已领取奖励帖子到 ID
-
           ids.add(id)
         }
       }
