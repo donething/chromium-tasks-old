@@ -23,7 +23,7 @@
 
 /* LOL 队名*/
 .team-name {
-  width: 50px;
+  width: 80px;
   font-weight: bold;
 }
 
@@ -64,7 +64,7 @@
 
 /* 比赛名 */
 .game-ename {
-  width: 200px;
+  width: 180px;
 }
 
 .tools .avatar-small {

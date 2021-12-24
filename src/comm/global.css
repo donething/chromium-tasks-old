@@ -4,7 +4,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  /*background-color: #e2e2e2;*/
+  background-color: #F4F5F7;
 }
 
 /* 链接 */
@@ -38,6 +38,7 @@ hr {
 /* 四边边框 */
 .border {
   border: 1px rgba(0, 0, 0, 0.08) solid;
+  box-shadow: 0 2px 3px rgb(0 0 0 / 10%);
 }
 
 /* 左右边框 */
@@ -193,41 +194,36 @@ hr {
 }
 
 /* 在flex布局中排在前面 */
-.front {
+.order-front {
   order: -1000;
 }
 
-/* 作者：粗体、灰色文字 */
-.author {
-  font-weight: bold;
-  color: #808080;
-}
-
-/* 标题：粗体 */
-.post-title {
-  font-weight: bold;
-  color: #333;
+/* 标题：深色文字 */
+.posts-title {
+  color: #222;
+  word-break: break-word;
   line-height: 2;
 }
 
-/* 内容：深色文字 */
-.post-content {
-  color: #222;
+/* 内容：浅色文字 */
+.posts-content {
+  color: #555;
   word-break: break-word;
   line-height: 1.8;
 }
 
-/* 描述：浅色文字 */
+/* 描述：更浅色文字 */
 .post-description {
-  color: #555;
+  color: #888;
   word-break: break-word;
   line-height: 1.8;
 }
 
 /* 额外信息：更浅色文字 */
 .post-extra {
-  color: #ccc;
-  line-height: 1.5;
+  color: #CCC;
+  word-break: break-word;
+  line-height: 1.8;
 }
 
 /* 文本：一行，溢出部分不显示 */
@@ -266,6 +262,12 @@ hr {
 .width-fill-remain {
   width: 0;
   flex: 1 0 auto;
+}
+
+/* 充满屏幕高度，不可滚动（里面的元素可滚动） */
+.vh100per {
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* 该元素右对齐 */
@@ -551,23 +553,17 @@ hr {
 }
 
 .success-text {
-  color: #52C41A;
+  color: #52C41A !important;
 }
 
 .focus-text {
-  color: #dc3545;
+  color: #FF0000;
 }
 
 .success-bg {
-  background: rgba(82, 196, 26, 0.5);
+  background: rgba(82, 196, 26, 0.5) !important;
 }
 
 .fail-bg {
-  background: rgba(250, 173, 20, 0.5);
-}
-
-/* 充满屏幕高度，不可滚动（里面的元素可滚动） */
-.vh100per {
-  height: 100vh;
-  overflow: hidden;
+  background: rgba(250, 173, 20, 0.5) !important;
 }
