@@ -1,10 +1,17 @@
 import {VPanel} from "../../components/vpanel"
 import {useEffect, useRef, useState} from "react"
 import {day, scrollIntoView} from "do-utils/dist/utils"
-import {Avatar, message} from "antd"
+import {Avatar, message, Space} from "antd"
 import {Element} from "cheerio"
 import "./matches.css"
 import {request} from "do-utils"
+import Icon from '@ant-design/icons'
+import {ReactComponent as IconHuya} from "../../icons/huya.svg"
+import {ReactComponent as IconDouyu} from "../../icons/douyu.svg"
+import {ReactComponent as IconBili} from "../../icons/bili.svg"
+import {ReactComponent as IconDYS} from "../../icons/bili.svg"
+import {ReactComponent as IconLck} from "../../icons/lck.svg"
+import {ReactComponent as IconToCur} from "../../icons/to_current.svg"
 
 const cheerio = require('cheerio')
 
@@ -304,26 +311,20 @@ const MatchesComp = function (): JSX.Element {
 
   // 工具栏
   let tools = (
-    <span className="padding-h">
-        <img title="LPL 虎牙" alt="虎牙" src="/icons/websites/huya.svg"
-             className="avatar-small margin-right clickable"
-             onClick={_ => window.open('https://www.huya.com/lpl', '_blank')}/>
-        <img title="LPL 斗鱼" alt="斗鱼" src="/icons/websites/douyu.svg"
-             className="avatar-small margin-right clickable"
-             onClick={_ => window.open('https://www.douyu.com/lpl', '_blank')}/>
-        <img title="LPL 哔哩哔哩" alt="哔哩" src="/icons/websites/bili.svg"
-             className="avatar-small margin-right clickable"
-             onClick={_ => window.open('https://live.bilibili.com/6', '_blank')}/>
-        <img title="LPL 德云色" alt="德云色" src="/icons/websites/bili.svg"
-             className="avatar-small margin-right clickable"
-             onClick={_ => window.open('https://live.bilibili.com/7777', '_blank')}/>
-        <img title="LCK" alt="LCK" src="/icons/brands/lck.svg"
-             className="avatar-small margin-right clickable"
-             onClick={_ => window.open('https://www.huya.com/lck', '_blank')}/>
-        <img title="跳转到今天的赛程" alt="跳转" src="/icons/sign/to_current.svg"
-             className="avatar-small clickable"
-             onClick={_ => scrollIntoView('.matches-recent')}/>
-      </span>
+    <Space className="padding-h">
+      <Icon className="clickable" title="LPL 虎牙" alt="虎牙" component={IconHuya}
+            onClick={_ => window.open('https://www.huya.com/lpl', '_blank')}/>
+      <Icon className="clickable" title="LPL 斗鱼" alt="斗鱼" component={IconDouyu}
+            onClick={_ => window.open('https://www.douyu.com/lpl', '_blank')}/>
+      <Icon className="clickable" title="LPL 哔哩哔哩" alt="哔哩" component={IconBili}
+            onClick={_ => window.open('https://live.bilibili.com/6', '_blank')}/>
+      <Icon className="clickable" title="LPL 德云色" alt="德云色" component={IconDYS}
+            onClick={_ => window.open('https://live.bilibili.com/7777', '_blank')}/>
+      <Icon className="clickable" title="LCK" alt="LCK" component={IconLck}
+            onClick={_ => window.open('https://www.huya.com/lck', '_blank')}/>
+      <Icon className="clickable" title="跳转到今天的赛程" alt="跳转" component={IconToCur}
+            onClick={_ => scrollIntoView('.matches-recent')}/>
+    </Space>
   )
 
   // 渲染赛程

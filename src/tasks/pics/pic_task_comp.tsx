@@ -1,7 +1,8 @@
 import {VPanel} from "../../components/vpanel"
 import React, {useEffect, useState} from "react"
 import {Button, message} from "antd"
-import {CloseOutlined, DownloadOutlined} from "@ant-design/icons"
+import Icon, {CloseOutlined, DownloadOutlined} from "@ant-design/icons"
+import {ReactComponent as IconWeibo} from "../../icons/weibo.svg"
 import {OptionInput} from "../../components/option_input"
 import {delItemRevoke2} from "../../comm/antd"
 import startDLPics from "./task"
@@ -26,7 +27,7 @@ export type Task = {
 // 网站 合集
 const sites = {
   weibo: {
-    logo: "/icons/websites/weibo.svg",
+    logo: IconWeibo,
     getURL: (uid: string) => `https://weibo.com/u/${uid}`
   }
 }
@@ -40,7 +41,7 @@ const TaskItem = function (props: { uid: string, plat: string, onDel: () => void
   return (
     <li className="row padding align-center justify-between border-bottom">
       <a className="row align-center" title={props.uid} href={url} target="_blank" rel="noreferrer">
-        <img className="avatar margin-right" title={props.plat} alt={props.plat} src={logo}/>
+        <Icon className="margin-right" title={props.plat} alt={props.plat} component={logo}/>
         <span>{props.uid}</span>
       </a>
 

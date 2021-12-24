@@ -1,5 +1,10 @@
 import {notify} from "do-utils/dist/utils"
 import {request} from "do-utils"
+import {ReactComponent as IconHuya} from "../../../icons/huya.svg"
+import {ReactComponent as IconDouyu} from "../../../icons/douyu.svg"
+import {ReactComponent as IconDouyin} from "../../../icons/douyin.svg"
+import {ReactComponent as IconBili} from "../../../icons/bili.svg"
+
 // HTML解析库
 const cheerio = require('cheerio')
 
@@ -11,14 +16,6 @@ const cheerio = require('cheerio')
 // anchor.AnchorUtils.monitor()
 export namespace anchor {
   const TAG = "[Anchor]"
-
-  // 已适配的平台
-  export enum Plat {
-    BiLi = "bili",
-    DouYin = "douyin",
-    DouYu = "douyu",
-    HuYa = "huya"
-  }
 
   // 主播的基础信息
   export class Basic {
@@ -76,7 +73,7 @@ export namespace anchor {
     // 斗鱼
     douyu: {
       // 网站图标
-      favicon: "/icons/websites/douyu.svg",
+      favicon: IconDouyu,
       /**
        * 获取主播的状态信息
        * @param  basic 主播的基础信息
@@ -112,7 +109,7 @@ export namespace anchor {
 
     // 虎牙
     huya: {
-      favicon: "/icons/websites/huya.svg",
+      favicon: IconHuya,
       /**
        * 获取主播的详细信息
        * @param  basic 主播的基础信息
@@ -157,7 +154,7 @@ export namespace anchor {
 
     // 哔哩哔哩
     bili: {
-      favicon: "/icons/websites/bili.svg",
+      favicon: IconBili,
       /**
        * 获取主播的状态信息
        * @param basic 主播的基础信息
@@ -193,7 +190,7 @@ export namespace anchor {
 
     // 抖音
     douyin: {
-      favicon: "/icons/websites/douyin.svg",
+      favicon: IconDouyin,
       /**
        * 获取主播的状态信息
        * @param basic 主播的基础信息

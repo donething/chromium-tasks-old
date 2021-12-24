@@ -2,6 +2,8 @@
 import {date, notify} from "do-utils/dist/utils"
 import {WXPush} from "do-utils/dist/wxpush"
 import {request} from "do-utils"
+import {ReactComponent as IconAppstore} from "../../../icons/appstore.svg"
+import {ReactComponent as IconPlaystore} from "../../../icons/playstore.svg"
 
 export namespace app {
   const TAG = "[Apps]"
@@ -83,7 +85,7 @@ export namespace app {
   export const StatusUtils = {
     // Apple 应用商店
     appstore: {
-      favicon: "/icons/brands/appstore.svg",
+      favicon: IconAppstore,
       /**
        * 检测 AppStore 商店的应用
        * @param basic 应用的基础信息
@@ -119,7 +121,7 @@ export namespace app {
 
     // Google 应用商店
     playstore: {
-      favicon: "/icons/brands/playstore.svg",
+      favicon: IconPlaystore,
       /**
        * 检测 PlayStore 商店的应用
        * @param basic 应用的基础信息

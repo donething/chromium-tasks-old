@@ -1,7 +1,7 @@
 // 顶部为卡片头，中部为列表显示数据，底部为添加
 import {VPanel} from "./vpanel"
 import {Avatar, Button, message, Switch} from "antd"
-import {CloseOutlined} from "@ant-design/icons"
+import Icon, {CloseOutlined} from "@ant-design/icons"
 import React, {useEffect, useState} from "react"
 import {insertOrdered} from "do-utils/dist/utils"
 import {delItemRevoke} from "../comm/antd"
@@ -24,7 +24,7 @@ type ListItemProps = {
   // 点击标题时的跳转地址
   url: string
   // 所在平台的图标
-  platIcon: string
+  platIcon: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
   // 备注
   comment?: string,
   // 需要特殊标记（如在线、限免，背景变色）
@@ -56,7 +56,7 @@ const ListItem = (props: ListItemProps): JSX.Element => {
                href={props.url} target="_blank" rel="noreferrer" style={{maxWidth: props.nameMax}}>
               {props.name}
             </a>
-            <Avatar className="margin-left" size={14} src={props.platIcon}/>
+            <Icon className="margin-left" component={props.platIcon}/>
             <span className="post-extra margin-left">{props.comment}</span>
           </span>
           <span className="row align-center put-right">
