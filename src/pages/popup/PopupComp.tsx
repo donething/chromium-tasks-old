@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react'
-import {Button} from "antd"
+import {Button, Space} from "antd"
 
 function PopupComp() {
   useEffect(() => {
@@ -7,27 +7,27 @@ function PopupComp() {
   }, [])
 
   return (
-    <div className="col" style={{backgroundColor: "#FFF"}}>
-      <Button type="link" onClick={() =>
+    <Space direction="vertical" style={{width: 80, padding: 5}}>
+      <span className="clickable" onClick={() =>
         chrome.tabs.create({url: "/index.html#/attentions"})}>关注
-      </Button>
+      </span>
 
-      <Button type="link" onClick={() =>
+      <span className="clickable" onClick={() =>
         chrome.tabs.create({url: "/index.html#/matches"})}>赛程
-      </Button>
+      </span>
 
-      <Button type="link" onClick={() =>
+      <span className="clickable" onClick={() =>
         chrome.tabs.create({url: "/index.html#/tasks"})}>任务记录
-      </Button>
+      </span>
 
-      <Button type="link" onClick={() =>
+      <span className="clickable" onClick={() =>
         chrome.tabs.create({url: "/index.html#/pics"})}>图片下载
-      </Button>
+      </span>
 
-      <Button type="link" onClick={() =>
+      <span className="clickable" onClick={() =>
         chrome.tabs.create({url: "/index.html#/options"})}>选项
-      </Button>
-    </div>
+      </span>
+    </Space>
   )
 }
 
