@@ -42,10 +42,11 @@ chrome.runtime.onInstalled.addListener(async () => {
 chrome.runtime.onStartup.addListener(async () => {
   // 因为 manifest mv3 对 service worker 的运行时间有限制，所以打开一个扩展页面绕过限制
   chrome.tabs.query({url: `chrome-extension://${chrome.runtime.id}/*`}, tabs => {
-    if (tabs.length === 0) {
-      console.log("打开扩展页面，绕过 service worker 的运行时间限制")
-      chrome.tabs.create({url: "/index.html#/tasks"})
+    if (tabs.length === 1 && tabs[0].id) {
+      chrome.tabs.remove(tabs[0].id)
     }
+    console.log("打开扩展页面，绕过 service worker 的运行时间限制")
+    chrome.tabs.create({url: "/index.html#/tasks"})
   })
 
   // hdsay
