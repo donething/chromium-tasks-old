@@ -15,81 +15,6 @@ import {ReactComponent as IconToCur} from "../../icons/to_current.svg"
 
 const cheerio = require('cheerio')
 
-// 当日的比赛整体为一个列表项，里面的比赛场次又构成一个列表
-const ListItem = (props: {
-  date: string,
-  dateBlock: string,
-  matches: Array<Game>,
-  isMarked: boolean
-}): JSX.Element => {
-  // 一场比赛的布局
-  const subItems = props.matches.map(game => (
-    <li className={`row align-center padding ${game.live ? 'matches-live' : ''}`} key={game.starttime}>
-      <span className="matches-time">{game.starttime}</span>
-
-      <span className="col margin-left-large">
-        <span className="row align-center">
-          <Avatar src={game.oneicon} size={16}/>
-          <span title={game.oneseedname} className={"team-name margin-left overflow-hide-line-one " +
-            (game.isover && game.onewin < game.twowin ? 'game-lost' : '')}>
-            {game.oneseedname}
-          </span>
-        </span>
-        <span className="row align-center">
-          <Avatar src={game.twoicon} size={16}/>
-          <span title={game.twoseedname} className={"team-name margin-left overflow-hide-line-one " +
-            (game.isover && game.onewin > game.twowin ? 'game-lost' : '')}>
-            {game.twoseedname}
-          </span>
-        </span>
-      </span>
-
-      <span className="row game-score margin-left-large">
-      {
-        game.onewin !== '0' || game.twowin !== '0' ? (
-          <span className="col align-center">
-          <span className="row align-center">
-            <span className="score-num">{game.onewin}</span>
-            <span className="row margin-left-large">
-              {
-                game.oneScore.map((n) =>
-                  <span className={`score-icon ${n === 1 ? 'score-icon-win' : ''}`}/>)
-              }
-            </span>
-          </span>
-          <span className="row align-center">
-            <span className="score-num">{game.twowin}</span>
-            <span className="row margin-left-large">
-              {
-                game.twoScore.map((n) =>
-                  <span className={`score-icon ${n === 1 ? 'score-icon-win' : ''}`}/>)
-              }
-            </span>
-          </span>
-        </span>
-        ) : (
-          <span>BO{game.bonum}</span>
-        )
-      }
-      </span>
-
-      <span className="game-ename margin-left-large overflow-hide-line-one" title={game.ename}>
-        {game.ename}
-      </span>
-    </li>
-  ))
-
-  // 一日内的所有比赛列表
-  return (
-    <li className={`col ${props.isMarked ? 'matches-recent' : ''}`}>
-      <span className="matches-date padding">{props.dateBlock}</span>
-      <ul className="col">
-        {subItems}
-      </ul>
-    </li>
-  )
-}
-
 export interface Matches {
   ret: number
   code: number
@@ -173,6 +98,81 @@ export interface Game {
   twoScore: number[]
 }
 
+// 当日的比赛整体为一个列表项，里面的比赛场次又构成一个列表
+const ListItem = (props: {
+  date: string,
+  dateBlock: string,
+  matches: Array<Game>,
+  isMarked: boolean
+}): JSX.Element => {
+  // 一场比赛的布局
+  const subItems = props.matches.map(game => (
+    <li className={`row align-center padding ${game.live ? 'matches-live' : ''}`} key={game.starttime}>
+      <span className="matches-time">{game.starttime}</span>
+
+      <span className="col margin-left-large">
+        <span className="row align-center">
+          <Avatar src={game.oneicon} size={16}/>
+          <span title={game.oneseedname} className={"team-name margin-left overflow-hide-line-one " +
+            (game.isover && game.onewin < game.twowin ? 'game-lost' : '')}>
+            {game.oneseedname}
+          </span>
+        </span>
+        <span className="row align-center">
+          <Avatar src={game.twoicon} size={16}/>
+          <span title={game.twoseedname} className={"team-name margin-left overflow-hide-line-one " +
+            (game.isover && game.onewin > game.twowin ? 'game-lost' : '')}>
+            {game.twoseedname}
+          </span>
+        </span>
+      </span>
+
+      <span className="row game-score margin-left-large">
+      {
+        game.onewin !== '0' || game.twowin !== '0' ? (
+          <span className="col align-center">
+          <span className="row align-center">
+            <span className="score-num">{game.onewin}</span>
+            <span className="row margin-left-large">
+              {
+                game.oneScore.map((n) =>
+                  <span className={`score-icon ${n === 1 ? 'score-icon-win' : ''}`}/>)
+              }
+            </span>
+          </span>
+          <span className="row align-center">
+            <span className="score-num">{game.twowin}</span>
+            <span className="row margin-left-large">
+              {
+                game.twoScore.map((n) =>
+                  <span className={`score-icon ${n === 1 ? 'score-icon-win' : ''}`}/>)
+              }
+            </span>
+          </span>
+        </span>
+        ) : (
+          <span>BO{game.bonum}</span>
+        )
+      }
+      </span>
+
+      <span className="game-ename margin-left-large overflow-hide-line-one" title={game.ename}>
+        {game.ename}
+      </span>
+    </li>
+  ))
+
+  // 一日内的所有比赛列表
+  return (
+    <li className={`col ${props.isMarked ? 'matches-recent' : ''}`}>
+      <span className="matches-date padding">{props.dateBlock}</span>
+      <ul className="col">
+        {subItems}
+      </ul>
+    </li>
+  )
+}
+
 // 比赛列表组件
 // 当最近一周没有赛程时，继续请求以前日期的赛程
 const MatchesComp = function (): JSX.Element {
@@ -248,6 +248,7 @@ const MatchesComp = function (): JSX.Element {
           }
 
           // 添加当日的比赛到列表
+          matches.dateKey = date
           matchesTmp.push(matches)
         }
 
