@@ -1,6 +1,6 @@
 import {VPanel} from "../../components/vpanel"
-import React, {useEffect, useState} from "react"
-import {Avatar, Button, message, Space} from "antd"
+import React, {CSSProperties, useEffect, useState} from "react"
+import {Avatar, Button, Card, message, Space} from "antd"
 import Icon, {CloseOutlined, DownloadOutlined} from "@ant-design/icons"
 import {ReactComponent as IconWeibo} from "../../icons/weibo.svg"
 import {OptionInput} from "../../components/option_input"
@@ -41,7 +41,7 @@ const sites = {
 }
 
 // 图片任务项
-const TaskItem = function (props: { uid: string, plat: string, onDel: () => void }) {
+const TaskItem = (props: { uid: string, plat: string, onDel: () => void }): JSX.Element => {
   // 用户的信息，用于显示
   const [userInfo, setUserInfo] = useState<UserInfo>({name: "", avatar: "", description: ""})
 
@@ -83,6 +83,51 @@ const TaskItem = function (props: { uid: string, plat: string, onDel: () => void
   )
 }
 
+// 远程服务端的状态组件
+const Remote = (props: { style?: CSSProperties }): JSX.Element => {
+  const [connOK, setConnOK] = useState<boolean | undefined>(undefined)
+  const [domain, setDomain] = useState("")
+
+  useEffect(() => {
+    const init = async () => {
+      // 从设置中读取服务端信息
+      let dataSettings = await chrome.storage.sync.get({settings: {vps: {}}})
+      let vps = dataSettings.settings.vps
+      if (!vps.domain || !vps.auth) {
+        console.log("VPS 服务端信息为空，无法连接到服务端")
+        message.warn("VPS 服务端信息为空，无法连接到服务端")
+        return
+      }
+
+      setDomain(vps.domain)
+      try {
+        request(`${vps.domain}/api/pics/dl/status`, undefined,
+          {headers: {"Authorization": vps.auth}})
+        setConnOK(true)
+      } catch (e) {
+        setConnOK(false)
+      }
+    }
+
+    init()
+  }, [])
+
+  // 使用不同颜色、文本标记是否可连接服务端
+  let mark = connOK === true ? "success-text" : connOK === false ? "focus-text" : ""
+  let text = connOK === true ? "正常" : connOK === false ? "无法连接" : "未知"
+
+  return (
+    <Card title="服务端状态" size="small" style={{...props.style}}
+          extra={<Button size="small" type="link" onClick={() => {
+            window.open(`${domain}/#/status`, "_blank")
+          }}>下载进度</Button>}>
+      <div className="col">
+        <div>服务端状态：<span className={mark}>{text}</span></div>
+      </div>
+    </Card>
+  )
+}
+
 // 图片的平台、ID 组件
 const PicTaskComp = function (): JSX.Element {
   const [tasks, setTasks] = useState<Array<Task>>([])
@@ -117,7 +162,7 @@ const PicTaskComp = function (): JSX.Element {
   let options = [[{title: "微博", value: "weibo", tip: "用户的 ID"}]]
 
   return (
-    <Space direction="horizontal">
+    <div className="row">
       <VPanel title="图集任务列表"
               content={<ul>{tasksList}</ul>}
               slot={<Button title="下载图集" icon={<DownloadOutlined/>} shape="circle" size="small" disabled={working}
@@ -140,7 +185,8 @@ const PicTaskComp = function (): JSX.Element {
                                      message.success("已添加新的图片任务")
                                    }}/>}
       />
-    </Space>
+      <Remote style={{width: 300, marginLeft: 10}}/>
+    </div>
   )
 }
 

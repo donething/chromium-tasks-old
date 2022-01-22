@@ -216,7 +216,7 @@ const startDLPics = async function (setWorking: React.Dispatch<React.SetStateAct
     // 当图集数量为空时，不能保存最新的进度信息到存储
     if (payload.posts.length === 0) {
       console.log(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
-      message.error(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
+      message.warn(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
       continue
     }
     let index = picTasks.list.findIndex(v => v.plat === task.plat && v.uid === task.uid)
