@@ -2,9 +2,12 @@ import {StorePic, Task} from "./pic_task_comp"
 import {download, request} from "do-utils"
 import {message} from "antd"
 import {sleep} from "do-utils/dist/utils"
+import React from "react"
 
 // 微博图集，将保存到本地 json 文件中，可传给服务端下载
 type Album = {
+  // 所在的平台（如“微博”）
+  plat: string
   // 该图集的微博 ID
   id: string
   // 图集的标题
@@ -106,8 +109,13 @@ type User = {
   following: boolean
 }
 
-// 获取图集列表的函数 getPosts() 的返回值
-type PostsPayload = { last: string | undefined, posts: { [id: string]: Album } }
+// 获取图集列表的信息
+type PostsPayload = {
+  // 最新的进度（图集的 ID）
+  last: string | undefined,
+  // 图集列表，如果为空则不能保存最新的进度信息到存储
+  posts: Album[]
+}
 // 根据平台，获取指定用户的图集列表
 const sites = {
   weibo: {
@@ -118,10 +126,9 @@ const sites = {
      * 1. 获取图集时，当遇到微博ID为上次任务保存的ID时，说明获取完成，可以停止获取该用户的微博
      * 2. 下载图集时，后端可在下载每个图集后保存ID，当发生异常时，继续下载
      * @param task 需下载图片的任务
-     * @return
      */
     async getPosts(task: Task): Promise<PostsPayload> {
-      let postObj: { [id: string]: Album } = {}
+      let postsList: Album[] = []
       let page = 1
       let lastIdstr = task.last
       while (true) {
@@ -133,16 +140,20 @@ const sites = {
           message.error(`获取微博图集(用户"${task.uid}")时出错，可能需要登录一次网站`)
         })
 
-        // 出错或不再包含图集时，退出循环
+        // 出错时，返回空的图集列表，表示没有新图集或获取失败，不能保存最新进度到存储
+        if (!obj) {
+          return {last: lastIdstr, posts: []}
+        }
+        // 不再包含图集时，退出循环
         if (!obj || obj.data.list.length === 0) {
-          return {last: lastIdstr, posts: postObj}
+          return {last: lastIdstr, posts: postsList}
         }
 
         // 提取图片的下载链接
         for (const [index, item] of obj.data.list.entries()) {
           // 当读取的帖子的 idstr 等于或小于已保存的进度记录，说明已读取到上次的地方，直接返回数据
           if (task.last && item.idstr.localeCompare(task.last) <= 0) {
-            return {last: lastIdstr, posts: postObj}
+            return {last: lastIdstr, posts: postsList}
           }
 
           // 保存第一页的第一个帖子的 idstr，将作为进度存储到 chromium storage
@@ -154,6 +165,9 @@ const sites = {
           const album: Array<string> = []
           const albumM: Array<string> = []
           for (const picId of item.pic_ids) {
+            if (!item.pic_infos[picId] || item.pic_infos[picId].largest.url.length === 0) {
+              continue
+            }
             album.push(item.pic_infos[picId].largest.url)
             albumM.push(item.pic_infos[picId].original.url)
           }
@@ -163,7 +177,14 @@ const sites = {
           let created = new Date(item.created_at).getTime() / 1000
 
           // 添加图集到数组
-          postObj[item.idstr] = {id: item.idstr, caption: caption, created: created, urls: album, urls_m: albumM}
+          postsList.push({
+            id: item.idstr,
+            caption: caption,
+            created: created,
+            urls: album,
+            urls_m: albumM,
+            plat: "weibo"
+          })
           // console.log(PicSaveBG.TAG, "[微博]", "已添加图集：", item.idstr);
         }
 
@@ -180,53 +201,97 @@ const sites = {
  * 下载图集列表到本地
  * 可在 .then()中执行获取完**所有**任务后的操作
  */
-const startDLPics = async function () {
+const startDLPics = async function (setWorking: React.Dispatch<React.SetStateAction<boolean>>) {
   // let tg = new TGSender(token);
-
+  setWorking(true)
+  let albums: Array<Album> = []
   // 读取 chromium 存储的数据
   let data = await chrome.storage.sync.get({picTasks: {list: []}})
+  let picTasks: StorePic = data.picTasks
+
+  // 获取用户的图集
   for (const task of data.picTasks.list) {
     // @ts-ignore
     let payload: PostsPayload = await sites[task.plat].getPosts(task)
-    // 存储该任务的进度，之所以重读存储，是避免当执行任务时对该扩展进行设置而无效的问题
-    let data = await chrome.storage.sync.get({picTasks: {list: []}})
-    let picTasks: StorePic = data.picTasks
+    // 当图集数量为空时，不能保存最新的进度信息到存储
+    if (payload.posts.length === 0) {
+      console.log(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
+      message.error(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
+      continue
+    }
     let index = picTasks.list.findIndex(v => v.plat === task.plat && v.uid === task.uid)
     if (index >= 0) {
       picTasks.list[index].last = payload.last
-      chrome.storage.sync.set({picTasks: picTasks})
     } else {
-      console.log(`无法保存任务"${task.uid}(${task.plat})"的进度`)
-      message.error(`无法保存任务"${task.uid}(${task.plat})"的进度`)
+      console.log(`无法保存任务"${task.uid}(${task.plat})"的进度：找不该索引`)
+      message.error(`无法保存任务"${task.uid}(${task.plat})"的进度：找不到索引`)
       continue
     }
 
-    // 仅将帖子数据保存到本地
-    download(JSON.stringify(payload.posts, null, 2), `${task.plat}_${task.uid}.json`)
-
-    /* 发送到 TG
-    let token = (await chrome.storage.sync.get({settings: {tgToken: {}}})).settings.tgToken
-    if (!token.picToken || !token.picToken) {
-      console.log("TG token 为空，无法发送图集")
-      message.warn("TG token 为空，无法发送图集")
-      return
-    }
-
-    // 最早发布的图集先被发送到 TG
-    for (let i = payload.posts.length - 1; i >= 0; i--) {
-      if (payload.posts[i].album.length === 0) continue
-      let result = await tg.sendMediaGroup(chat_id, postsList[i].album)
-      if (result === true) {
-        task.last = postsList[i].idstr
-        console.log(`已发送发送图集(${postsList[i].idstr})`)
-      } else {
-        console.log(`发送图集(${postsList[i].idstr})失败：`, result)
-      }
-    }
-     */
+    albums.push(...payload.posts)
 
     console.log(`已完成读取用户"${task.uid}(${task.plat})"的图集`)
   }
+
+  // 判断是否有新图集需要下载
+  if (albums.length === 0) {
+    console.log("获取图集的数量为 0，不需下载")
+    message.info("获取图集的数量为 0，不需下载")
+    setWorking(false)
+    return
+  }
+
+  // 将图集数据保存到本地，同时发送下载请求
+  download(JSON.stringify(albums, null, 2), `pics_tasks_${Date.now()}.json`)
+
+  // 从设置中读取服务端信息，以实际发送下载请求
+  let dataSettings = await chrome.storage.sync.get({settings: {vps: {}}})
+  let vps = dataSettings.settings.vps
+  if (!vps.domain || !vps.auth) {
+    console.log("VPS 信息为空，无法发送下载图集的请求")
+    message.warn("VPS 信息为空，无法发送下载图集的请求")
+    setWorking(false)
+    return
+  }
+
+  let resp = await request(`${vps.domain}/api/pics/dl`, albums, {headers: {"Authorization": vps.auth}})
+  // 解析响应结果
+  let result = await resp.json().catch(e => console.log("解析下载图集的响应出错：", e))
+  if (result && result.code === 0) {
+    // 存储该任务的进度，之所以重读存储，是避免当执行任务时对该扩展进行设置而无效的问题
+    let sData = await chrome.storage.sync.get({picTasks: {list: []}})
+    sData.picTasks.list = picTasks.list
+    chrome.storage.sync.set({picTasks: sData.picTasks})
+
+    console.log("已提交图集下载任务")
+    message.success("已提交图集下载任务")
+    setWorking(false)
+    return
+  }
+
+  console.log("下载图集出错：", result.msg)
+  message.error("下载图集出错：", result.msg)
+  setWorking(false)
+  /* 发送到 TG
+  let token = (await chrome.storage.sync.get({settings: {tgToken: {}}})).settings.tgToken
+  if (!token.picToken || !token.picToken) {
+    console.log("TG token 为空，无法发送图集")
+    message.warn("TG token 为空，无法发送图集")
+    return
+  }
+
+  // 最早发布的图集先被发送到 TG
+  for (let i = payload.posts.length - 1; i >= 0; i--) {
+    if (payload.posts[i].album.length === 0) continue
+    let result = await tg.sendMediaGroup(chat_id, postsList[i].album)
+    if (result === true) {
+      task.last = postsList[i].idstr
+      console.log(`已发送发送图集(${postsList[i].idstr})`)
+    } else {
+      console.log(`发送图集(${postsList[i].idstr})失败：`, result)
+    }
+  }
+   */
 }
 
 export default startDLPics

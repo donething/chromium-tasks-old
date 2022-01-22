@@ -194,98 +194,99 @@ const MatchesComp = function (): JSX.Element {
   // 需要获取赛程的比赛
   const REG_EIDS = /(全球总决赛)|(LPL)|(LCK)|(NEST)/
 
+  // 因为 scroll 事件会频繁触发，所以设置 setTimeout 避免多次获取赛程
+  // 另外只使用 loadBusy 状态量时，如果网速过快--，起不了避免多次赛程的作用，所以另加 setTimeout 使用
+  let setLoadDone = () => {
+    setTimeout(() => {
+      loadBusyRef.current = false
+    }, 500)
+  }
+
+  // 临时此次获取的赛程，将合并到 matches
+  let matchesTmp: Array<ScheduleList> = []
+  const init = async () => {
+    // 先获取赛区列表
+    let listResp = await request("https://wanplus.com/lol/schedule")
+    let listHtmlStr = await listResp.text()
+    let $ = cheerio.load(listHtmlStr)
+
+    // 需要获取赛程的赛区列表
+    let eids: Array<string> = []
+    let eidsName: Array<string> = []
+    $("ul.slide-list li").toArray().forEach((item: Element) => {
+      let doc = $(item)
+      // 仅提取英雄联盟(编号为"2")的赛程
+      if (doc.attr("data-gametype") === "2" && REG_EIDS.test(doc.text())) {
+        eids.push(doc.attr("data-eid").trim())
+        eidsName.push(doc.text().trim())
+      }
+    })
+
+    // 再请求指定赛区的赛程
+    let url = "https://m.wanplus.com/ajax/schedule/list"
+    let data = `game=2&eids=${eids.join(",")}&time=${time}`
+    let headers = {
+      "x-requested-with": "XMLHttpRequest"
+    }
+    console.log(`获取LOL赛程(${time})`, `包含的赛区：${JSON.stringify(eidsName)}`)
+    request(url, data, {headers: headers}).then(async resp => {
+      let payload: Matches = await resp.json()
+
+      // 提取赛程
+      // 按日提取赛程信息
+      for (const [date, matches] of Object.entries(payload.data.scheduleList)) {
+        // list 为 false，表示当日没有比赛
+        if (!matches.list) continue
+        // 找到最近的下一场比赛的日期（如"20210125"）
+        // 如果recentNext不为空，说明已找到离今天最近的赛程，不需要再改变了
+        if (recentNextRef.current === "" && date >= today) {
+          recentNextRef.current = date
+        }
+
+        // 添加当日的比赛到列表
+        matches.dateKey = date
+        matchesTmp.push(matches)
+      }
+
+      // 根据获取更早、更晚赛事的情况，需要分先后连接数组
+      if (time === nextRef.current) {
+        setMatches(prev => [...prev, ...matchesTmp])
+      } else if (time === prevRef.current) {
+        setMatches(prev => [...matchesTmp, ...prev])
+      } else {
+        setMatches([...matchesTmp])
+        // 首次获取赛程时，自动滚动到当天的赛程（因为渲染问题，需要延迟一会儿）
+        scrollIntoView(".matches-recent")
+      }
+
+      setLoadDone()
+      // 最近一周没有赛程时，继续请求以前日期的赛程
+      if (matchesTmp.length === 0) {
+        if (matches.length === 0) {
+          setTime(payload.data.prevtime)
+          return
+        } else {
+          message.info("没有更多的赛程信息了")
+          return
+        }
+      }
+      // 保存更前、后赛程的时间信息
+      if (nextRef.current === 0 || payload.data.nexttime > nextRef.current) {
+        nextRef.current = payload.data.nexttime
+      }
+      if (prevRef.current === 0 || payload.data.prevtime < prevRef.current) {
+        prevRef.current = payload.data.prevtime
+      }
+    }, error => {
+      console.log(`获取 LOL 赛程时出现网络错误`, error)
+      setLoadDone()
+    })
+  }
+
   useEffect(() => {
     document.title = `比赛赛程 - ${chrome.runtime.getManifest().name}`
 
     loadBusyRef.current = true
-    // 因为 scroll 事件会频繁触发，所以设置 setTimeout 避免多次获取赛程
-    // 另外只使用 loadBusy 状态量时，如果网速过快--，起不了避免多次赛程的作用，所以另加 setTimeout 使用
-    let setLoadDone = () => {
-      setTimeout(() => {
-        loadBusyRef.current = false
-      }, 500)
-    }
-
-    // 临时此次获取的赛程，将合并到 matches
-    let matchesTmp: Array<ScheduleList> = []
-    const init = async () => {
-      // 先获取赛区列表
-      let listResp = await request("https://wanplus.com/lol/schedule")
-      let listHtmlStr = await listResp.text()
-      let $ = cheerio.load(listHtmlStr)
-
-      // 需要获取赛程的赛区列表
-      let eids: Array<string> = []
-      let eidsName: Array<string> = []
-      $("ul.slide-list li").toArray().forEach((item: Element) => {
-        let doc = $(item)
-        // 仅提取英雄联盟(编号为"2")的赛程
-        if (doc.attr("data-gametype") === "2" && REG_EIDS.test(doc.text())) {
-          eids.push(doc.attr("data-eid").trim())
-          eidsName.push(doc.text().trim())
-        }
-      })
-
-      // 再请求指定赛区的赛程
-      let url = "https://m.wanplus.com/ajax/schedule/list"
-      let data = `game=2&eids=${eids.join(",")}&time=${time}`
-      let headers = {
-        "x-requested-with": "XMLHttpRequest"
-      }
-      console.log(`获取LOL赛程(${time})`, `包含的赛区：${JSON.stringify(eidsName)}`)
-      request(url, data, {headers: headers}).then(async resp => {
-        let payload: Matches = await resp.json()
-
-        // 提取赛程
-        // 按日提取赛程信息
-        for (const [date, matches] of Object.entries(payload.data.scheduleList)) {
-          // list 为 false，表示当日没有比赛
-          if (!matches.list) continue
-          // 找到最近的下一场比赛的日期（如"20210125"）
-          // 如果recentNext不为空，说明已找到离今天最近的赛程，不需要再改变了
-          if (recentNextRef.current === "" && date >= today) {
-            recentNextRef.current = date
-          }
-
-          // 添加当日的比赛到列表
-          matches.dateKey = date
-          matchesTmp.push(matches)
-        }
-
-        // 根据获取更早、更晚赛事的情况，需要分先后连接数组
-        if (time === nextRef.current) {
-          setMatches(prev => [...prev, ...matchesTmp])
-        } else if (time === prevRef.current) {
-          setMatches(prev => [...matchesTmp, ...prev])
-        } else {
-          setMatches([...matchesTmp])
-          // 首次获取赛程时，自动滚动到当天的赛程（因为渲染问题，需要延迟一会儿）
-          scrollIntoView(".matches-recent")
-        }
-
-        setLoadDone()
-        // 最近一周没有赛程时，继续请求以前日期的赛程
-        if (matchesTmp.length === 0) {
-          if (matches.length === 0) {
-            setTime(payload.data.prevtime)
-            return
-          } else {
-            message.info("没有更多的赛程信息了")
-            return
-          }
-        }
-        // 保存更前、后赛程的时间信息
-        if (nextRef.current === 0 || payload.data.nexttime > nextRef.current) {
-          nextRef.current = payload.data.nexttime
-        }
-        if (prevRef.current === 0 || payload.data.prevtime < prevRef.current) {
-          prevRef.current = payload.data.prevtime
-        }
-      }, error => {
-        console.log(`获取 LOL 赛程时出现网络错误`, error)
-        setLoadDone()
-      })
-    }
 
     // 请求数据、更新界面
     init()

@@ -3,7 +3,7 @@ import {Button, Card, Input, message} from "antd"
 import {BackupPanel, delRevoke} from "../../comm/antd"
 
 // 微信 Token
-function WXToken(): JSX.Element {
+const WXToken = function (): JSX.Element {
   const [appid, setAppid] = useState("")
   const [secret, setSecret] = useState("")
   const [tplID, setTplID] = useState("")
@@ -99,7 +99,7 @@ function WXToken(): JSX.Element {
 }
 
 // TG Token
-function TGToken(): JSX.Element {
+const TGToken = function (): JSX.Element {
   const [picChatID, setPicChatID] = useState("")
   const [picToken, setPicToken] = useState("")
 
@@ -179,12 +179,95 @@ function TGToken(): JSX.Element {
   )
 }
 
+// VPS 参数
+const VPS = function (): JSX.Element {
+  // VPS 的域名、验证码
+  const [domain, setDomain] = useState("")
+  const [auth, setAuth] = useState("")
+
+  // 将存储
+  const vps = {
+    domain: domain?.trim(),
+    auth: auth?.trim()
+  }
+
+  // 仅在组件被导入时读取数据，组件有变动（重新渲染）时不执行
+  useEffect(() => {
+    // 读取存储的数据，显示
+    chrome.storage.sync.get({settings: {vps: {}}}).then(data => {
+      console.log("读取存储的 VPS 信息")
+      if (data.settings.vps) {
+        setDomain(data.settings.vps.domain)
+        setAuth(data.settings.vps.auth)
+      }
+    })
+  }, [])
+
+  return (
+    <Card title="VPS 信息" size="small" style={{width: 300}}>
+      <div className="col margin-v-sub">
+        <Input.Password addonBefore="Domain" value={domain} type="password"
+                        onChange={e => setDomain(e.target.value)}/>
+        <Input.Password addonBefore="Auth" value={auth} type="password"
+                        onChange={e => setAuth(e.target.value)}/>
+      </div>
+
+      <div className="row justify-between margin-top-large">
+        <Button type="primary" onClick={async _ => {
+          if (!vps.domain || !vps.auth) {
+            message.info("输入的信息中有部分为空")
+            return
+          }
+
+          let data = await chrome.storage.sync.get({settings: {}})
+          data.settings.vps = vps
+          chrome.storage.sync.set({settings: data.settings}, () => {
+            console.log("已保存 VPS 信息")
+            message.success("已保存 VPS 信息")
+          })
+        }}>保存 VPS 信息
+        </Button>
+
+        <Button type="primary" danger onClick={_ => {
+          delRevoke(`VPS 信息`, vps, async () => {
+            // 删除输入框绑定的数据
+            setDomain("")
+            setAuth("")
+
+            // 保存到 chromium storage
+            let data = await chrome.storage.sync.get({settings: {}})
+            data.settings.vps = undefined
+            chrome.storage.sync.set({settings: data.settings}).then(() => {
+              console.log("已删除 VPS 信息")
+              message.warn("已删除 VPS 信息")
+            })
+          }, async (deleddata) => {
+            // 撤销删除，恢复到 chromium storage
+            let data = await chrome.storage.sync.get({settings: {}})
+            data.settings.vps = vps
+            chrome.storage.sync.set({settings: data.settings}, () => {
+              console.log("已保存 VPS 信息")
+              message.success("已保存 VPS 信息")
+            })
+
+            // 恢复输入框绑定的数据
+            setDomain(deleddata.domain)
+            setAuth(deleddata.auth)
+          })
+        }}>删除 VPS 信息
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
 // 选项页
 function OptionsComp() {
   return (
     <div className="row wrap">
       <WXToken/>
       <TGToken/>
+      <VPS/>
       <BackupPanel/>
     </div>
   )

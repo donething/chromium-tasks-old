@@ -8,13 +8,13 @@ const TasksComp = () => {
   const initV = {last: "未知", replyCount: 0, total: 0}
   const [tasks, setTasks] = useState<{ ccmnn: CcmnnSets, hdsay: HdsaySets }>({ccmnn: initV, hdsay: initV})
 
+  const init = async () => {
+    let data = await chrome.storage.sync.get("tasks")
+    setTasks(data.tasks)
+  }
+
   useEffect(() => {
     document.title = `任务记录 - ${chrome.runtime.getManifest().name}`
-
-    const init = async () => {
-      let data = await chrome.storage.sync.get("tasks")
-      setTasks(data.tasks)
-    }
 
     init()
   }, [])
