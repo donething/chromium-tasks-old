@@ -5,8 +5,8 @@ import Icon, {CloseOutlined, DownloadOutlined} from "@ant-design/icons"
 import {ReactComponent as IconWeibo} from "../../icons/weibo.svg"
 import {OptionInput} from "../../components/option_input"
 import {delItemRevoke2} from "../../comm/antd"
-import startDLPics from "./task"
 import {request} from "do-utils"
+import {startDLPics, startRetry} from "./task"
 
 // 存储到 chromium storage 的数据，键为"picTasks"
 export type StorePic = {
@@ -118,12 +118,13 @@ const Remote = (props: { style?: CSSProperties }): JSX.Element => {
 
   return (
     <Card title="服务端状态" size="small" style={{...props.style}}
-          extra={<Button size="small" type="link" onClick={() => {
-            window.open(`${domain}/#/status`, "_blank")
-          }}>下载进度</Button>}>
-      <div className="col">
-        <div>服务端状态：<span className={mark}>{text}</span></div>
-      </div>
+          extra={<span title="服务端的连接状态" className={mark}>{text}</span>}>
+      <Space direction="vertical">
+        <Button title="查看服务端的下载状态" size="small" onClick={() => {
+          window.open(`${domain}/#/status`, "_blank")
+        }}>下载进度</Button>
+        <Button title="重试之前下载失败的图集" size="small" onClick={() => startRetry()}>重试失败</Button>
+      </Space>
     </Card>
   )
 }

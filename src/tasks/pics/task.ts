@@ -113,7 +113,7 @@ type User = {
 type PostsPayload = {
   // 最新的进度（图集的 ID）
   last: string | undefined,
-  // 图集列表，如果为空则不能保存最新的进度信息到存储
+  // 图集列表，如果为空集则不能保存最新的进度信息到存储
   posts: Album[]
 }
 // 根据平台，获取指定用户的图集列表
@@ -197,12 +197,36 @@ const sites = {
   }
 }
 
+// 发送下载请求
+// 新下载、重试下载失败的图集（此时 albums 需传递为 []）
+const sendToDL = async (path: string, albums: Array<Album>): Promise<boolean> => {
+  // 从设置中读取服务端信息，以实际发送下载请求
+  let dataSettings = await chrome.storage.sync.get({settings: {vps: {}}})
+  let vps = dataSettings.settings.vps
+  if (!vps.domain || !vps.auth) {
+    console.log("VPS 信息为空，无法发送下载图集的请求")
+    message.warn("VPS 信息为空，无法发送下载图集的请求")
+    return false
+  }
+
+  let resp = await request(vps.domain + path, albums, {headers: {"Authorization": vps.auth}})
+  // 解析响应结果
+  let result = await resp.json().catch(e => console.log("解析下载图集的响应出错：", e))
+  if (!result || result.code !== 0) {
+    message.error("提交下载图集出错")
+    return false
+  }
+
+  console.log("已提交图集下载任务")
+  message.success("已提交图集下载任务")
+  return true
+}
+
 /**
  * 下载图集列表到本地
  * 可在 .then()中执行获取完**所有**任务后的操作
  */
-const startDLPics = async function (setWorking: React.Dispatch<React.SetStateAction<boolean>>) {
-  // let tg = new TGSender(token);
+export const startDLPics = async function (setWorking: React.Dispatch<React.SetStateAction<boolean>>) {
   setWorking(true)
   let albums: Array<Album> = []
   // 读取 chromium 存储的数据
@@ -215,16 +239,17 @@ const startDLPics = async function (setWorking: React.Dispatch<React.SetStateAct
     let payload: PostsPayload = await sites[task.plat].getPosts(task)
     // 当图集数量为空时，不能保存最新的进度信息到存储
     if (payload.posts.length === 0) {
-      console.log(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
-      message.warn(`不保存任务"${task.uid}(${task.plat})"的进度：图集为空`)
+      console.log(`用户"${task.uid}(${task.plat})"没有新图集，不需保存进度`)
+      message.warn(`用户"${task.uid}(${task.plat})"没有新图集`)
       continue
     }
+
     let index = picTasks.list.findIndex(v => v.plat === task.plat && v.uid === task.uid)
     if (index >= 0) {
       picTasks.list[index].last = payload.last
     } else {
-      console.log(`无法保存任务"${task.uid}(${task.plat})"的进度：找不该索引`)
-      message.error(`无法保存任务"${task.uid}(${task.plat})"的进度：找不到索引`)
+      console.log(`找不到用户"${task.uid}(${task.plat})"的索引，无法保存进度`)
+      message.error(`找不到用户"${task.uid}(${task.plat})"的索引`)
       continue
     }
 
@@ -244,54 +269,19 @@ const startDLPics = async function (setWorking: React.Dispatch<React.SetStateAct
   // 将图集数据保存到本地，同时发送下载请求
   download(JSON.stringify(albums, null, 2), `pics_tasks_${Date.now()}.json`)
 
-  // 从设置中读取服务端信息，以实际发送下载请求
-  let dataSettings = await chrome.storage.sync.get({settings: {vps: {}}})
-  let vps = dataSettings.settings.vps
-  if (!vps.domain || !vps.auth) {
-    console.log("VPS 信息为空，无法发送下载图集的请求")
-    message.warn("VPS 信息为空，无法发送下载图集的请求")
-    setWorking(false)
-    return
-  }
-
-  let resp = await request(`${vps.domain}/api/pics/dl`, albums, {headers: {"Authorization": vps.auth}})
-  // 解析响应结果
-  let result = await resp.json().catch(e => console.log("解析下载图集的响应出错：", e))
-  if (result && result.code === 0) {
+  let success = await sendToDL("/api/pics/dl", albums)
+  if (success) {
     // 存储该任务的进度，之所以重读存储，是避免当执行任务时对该扩展进行设置而无效的问题
     let sData = await chrome.storage.sync.get({picTasks: {list: []}})
     sData.picTasks.list = picTasks.list
     chrome.storage.sync.set({picTasks: sData.picTasks})
-
-    console.log("已提交图集下载任务")
-    message.success("已提交图集下载任务")
-    setWorking(false)
-    return
   }
-
-  console.log("下载图集出错：", result.msg)
-  message.error("下载图集出错：", result.msg)
   setWorking(false)
-  /* 发送到 TG
-  let token = (await chrome.storage.sync.get({settings: {tgToken: {}}})).settings.tgToken
-  if (!token.picToken || !token.picToken) {
-    console.log("TG token 为空，无法发送图集")
-    message.warn("TG token 为空，无法发送图集")
-    return
-  }
-
-  // 最早发布的图集先被发送到 TG
-  for (let i = payload.posts.length - 1; i >= 0; i--) {
-    if (payload.posts[i].album.length === 0) continue
-    let result = await tg.sendMediaGroup(chat_id, postsList[i].album)
-    if (result === true) {
-      task.last = postsList[i].idstr
-      console.log(`已发送发送图集(${postsList[i].idstr})`)
-    } else {
-      console.log(`发送图集(${postsList[i].idstr})失败：`, result)
-    }
-  }
-   */
 }
 
-export default startDLPics
+/**
+ * 重试之前下载失败的图集
+ */
+export const startRetry = () => {
+  sendToDL("/api/pics/dl/retry", [])
+}
