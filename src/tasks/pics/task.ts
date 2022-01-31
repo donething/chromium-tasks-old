@@ -136,8 +136,8 @@ const sites = {
         let url = `https://weibo.com/ajax/statuses/mymblog?uid=${task.uid}&page=${page}&feature=1`
         let resp = await request(url)
         let obj: WBList = await resp.json().catch(e => {
-          console.log(`获取微博用户"${task.uid}"的图集地址时出错，可能需要登录一次网站：`, e)
-          message.error(`获取微博图集(用户"${task.uid}")时出错，可能需要登录一次网站`)
+          console.log(`[${task.plat}][${task.uid}] 获取图集地址出错，可能需要登录一次网站：`, e)
+          message.error(`[${task.plat}][${task.uid}] 获取图集地址出错，可能需要登录一次网站`)
         })
 
         // 出错时，返回空的图集列表，表示没有新图集或获取失败，不能保存最新进度到存储
@@ -188,7 +188,7 @@ const sites = {
           // console.log(PicSaveBG.TAG, "[微博]", "已添加图集：", item.idstr);
         }
 
-        console.log(`已添加第 ${page} 页的图集`)
+        console.log(`[${task.plat}][${task.uid}] 已添加第 ${page} 页的图集`)
         page++
 
         await sleep(Math.random() * 3 * 1000)
@@ -239,8 +239,8 @@ export const startDLPics = async function (setWorking: React.Dispatch<React.SetS
     let payload: PostsPayload = await sites[task.plat].getPosts(task)
     // 当图集数量为空时，不能保存最新的进度信息到存储
     if (payload.posts.length === 0) {
-      console.log(`用户"${task.uid}(${task.plat})"没有新图集，不需保存进度`)
-      message.warn(`用户"${task.uid}(${task.plat})"没有新图集`)
+      console.log(`[${task.plat}][${task.uid}] 没有新图集，不需保存进度`)
+      message.warn(`[${task.plat}][${task.uid}] 没有新图集`)
       continue
     }
 
@@ -248,14 +248,14 @@ export const startDLPics = async function (setWorking: React.Dispatch<React.SetS
     if (index >= 0) {
       picTasks.list[index].last = payload.last
     } else {
-      console.log(`找不到用户"${task.uid}(${task.plat})"的索引，无法保存进度`)
-      message.error(`找不到用户"${task.uid}(${task.plat})"的索引`)
+      console.log(`[${task.plat}][${task.uid}] 找不到索引，无法保存进度`)
+      message.error(`[${task.plat}][${task.uid}] 找不到索引`)
       continue
     }
 
     albums.push(...payload.posts)
 
-    console.log(`已完成读取用户"${task.uid}(${task.plat})"的图集`)
+    console.log(`[${task.plat}][${task.uid}] 已完成读取图集`)
   }
 
   // 判断是否有新图集需要下载
