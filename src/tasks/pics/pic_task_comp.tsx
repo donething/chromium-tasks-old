@@ -1,12 +1,12 @@
 import {VPanel} from "../../components/vpanel"
 import React, {CSSProperties, useEffect, useState} from "react"
 import {Avatar, Button, Card, message, Space} from "antd"
-import Icon, {CloseOutlined, DownloadOutlined} from "@ant-design/icons"
+import Icon, {CloseOutlined, DownloadOutlined, ClearOutlined} from "@ant-design/icons"
 import {ReactComponent as IconWeibo} from "../../icons/weibo.svg"
 import {OptionInput} from "../../components/option_input"
 import {delItemRevoke2} from "../../comm/antd"
 import {request} from "do-utils"
-import {startDLPics, startRetry} from "./task"
+import {clearProcess, startDLPics, startRetry} from "./task"
 
 // 存储到 chromium storage 的数据，键为"picTasks"
 export type StorePic = {
@@ -166,8 +166,12 @@ const PicTaskComp = function (): JSX.Element {
     <div className="row">
       <VPanel title="图集任务列表"
               content={<ul>{tasksList}</ul>}
-              slot={<Button title="下载图集" icon={<DownloadOutlined/>} shape="circle" size="small" disabled={working}
-                            onClick={() => startDLPics(setWorking)}/>}
+              slot={<Space direction="horizontal">
+                <Button title="删除进度" icon={<ClearOutlined/>} shape="circle" size="small"
+                        onClick={() => clearProcess()}/>
+                <Button title="下载图集" icon={<DownloadOutlined/>} shape="circle" size="small" disabled={working}
+                        onClick={() => startDLPics(setWorking)}/>
+              </Space>}
               footer={<OptionInput placeholder={"用户 ID"} enterButton="添加" size="small"
                                    optionsList={options}
                                    onSearch={async (v, sList) => {

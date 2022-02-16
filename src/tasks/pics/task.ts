@@ -3,6 +3,7 @@ import {download, request} from "do-utils"
 import {message} from "antd"
 import {sleep} from "do-utils/dist/utils"
 import React from "react"
+import {delRevoke} from "../../comm/antd"
 
 // 微博图集，将保存到本地 json 文件中，可传给服务端下载
 type Album = {
@@ -10,6 +11,8 @@ type Album = {
   plat: string
   // 该图集的微博 ID
   id: string
+  // 图集所属用户的 ID
+  uid: string
   // 图集的标题
   caption: string
   // 图集的创建时间（不同于发布时间）
@@ -178,12 +181,13 @@ const sites = {
 
           // 添加图集到数组
           postsList.push({
+            plat: "weibo",
+            uid: task.uid,
             id: item.idstr,
             caption: caption,
             created: created,
             urls: album,
-            urls_m: albumM,
-            plat: "weibo"
+            urls_m: albumM
           })
           // console.log(PicSaveBG.TAG, "[微博]", "已添加图集：", item.idstr);
         }
@@ -284,4 +288,23 @@ export const startDLPics = async function (setWorking: React.Dispatch<React.SetS
  */
 export const startRetry = () => {
   sendToDL("/api/pics/dl/retry", [])
+}
+
+// 清除所有任务的进度
+export const clearProcess = async function () {
+  // 读取 chromium 存储的数据
+  let data = await chrome.storage.sync.get({picTasks: {list: []}})
+  let picTasks: StorePic = data.picTasks
+
+  delRevoke<StorePic>("所有任务的进度", picTasks, () => {
+    for (let task of picTasks.list) {
+      task.last = undefined
+    }
+    chrome.storage.sync.set({picTasks: picTasks})
+  }, async (deledData) => {
+    let data = await chrome.storage.sync.get({picTasks: {list: []}})
+    let picTasks: StorePic = data.picTasks
+    picTasks.list = deledData.list
+    chrome.storage.sync.set({picTasks: picTasks})
+  })
 }

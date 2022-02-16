@@ -22,10 +22,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "set INLINE_RUNTIME_CHUNK=false && craco build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "build-ext": "set INLINE_RUNTIME_CHUNK=false && craco build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
