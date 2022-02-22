@@ -70,6 +70,8 @@ type WBTopic = {
   text_raw: string
   // 博主的信息
   user: User
+  // 当为转贴时，为原贴数据
+  retweeted_status: WBTopic
 }
 
 // 图片的详细信息
@@ -136,7 +138,8 @@ const sites = {
       let lastIdstr = task.last
       while (true) {
         // 获取数据、解析
-        let url = `https://weibo.com/ajax/statuses/mymblog?uid=${task.uid}&page=${page}&feature=1`
+        // feature 为 0 表示获取原贴+转帖；为 1 表示只获取原贴
+        let url = `https://weibo.com/ajax/statuses/mymblog?uid=${task.uid}&page=${page}&feature=0`
         let resp = await request(url)
         let obj: WBList = await resp.json().catch(e => {
           console.log(`[${task.plat}][${task.uid}] 获取图集地址出错，可能需要登录一次网站：`, e)
@@ -148,7 +151,8 @@ const sites = {
           return {last: lastIdstr, posts: []}
         }
         // 不再包含图集时，退出循环
-        if (!obj || obj.data.list.length === 0) {
+        if (obj.data.list.length === 0) {
+          console.log(`[${task.plat}][${task.uid}] 已获取完最新图集`)
           return {last: lastIdstr, posts: postsList}
         }
 
@@ -167,23 +171,29 @@ const sites = {
           // 按分辨率存储图片的地址
           const album: Array<string> = []
           const albumM: Array<string> = []
-          for (const picId of item.pic_ids) {
-            if (!item.pic_infos[picId] || item.pic_infos[picId].largest.url.length === 0) {
+
+          // 如果主贴中图集为空，而 retweeted_status 不为空，说明为转贴，从原贴中获取图集数据
+          let payload = item
+          if (item.pic_ids.length === 0 && item.retweeted_status) {
+            payload = item.retweeted_status
+          }
+          for (const picId of payload.pic_ids) {
+            if (!payload.pic_infos[picId] || payload.pic_infos[picId].largest.url.length === 0) {
               continue
             }
-            album.push(item.pic_infos[picId].largest.url)
-            albumM.push(item.pic_infos[picId].original.url)
+            album.push(payload.pic_infos[picId].largest.url)
+            albumM.push(payload.pic_infos[picId].original.url)
           }
           // 微博的标题、创建时间
-          let caption = item.text_raw.replace(/[\s\u200B-\u200D\uFEFF]/g, "") +
-            `\nFrom: ${item.mblogid}`
-          let created = new Date(item.created_at).getTime() / 1000
+          let caption = payload.text_raw.replace(/[\s\u200B-\u200D\uFEFF]/g, "") +
+            `\nFrom: ${payload.mblogid}`
+          let created = new Date(payload.created_at).getTime() / 1000
 
           // 添加图集到数组
           postsList.push({
             plat: "weibo",
             uid: task.uid,
-            id: item.idstr,
+            id: payload.idstr,
             caption: caption,
             created: created,
             urls: album,
@@ -213,7 +223,13 @@ const sendToDL = async (path: string, albums: Array<Album>): Promise<boolean> =>
     return false
   }
 
-  let resp = await request(vps.domain + path, albums, {headers: {"Authorization": vps.auth}})
+  let resp = await request(vps.domain + path, albums,
+    {headers: {"Authorization": vps.auth}}).catch(e => console.log("发送下载图集的请求出错", e))
+  if (!resp) {
+    message.error("发送下载图集的请求出错")
+    return false
+  }
+
   // 解析响应结果
   let result = await resp.json().catch(e => console.log("解析下载图集的响应出错：", e))
   if (!result || result.code !== 0) {
@@ -221,8 +237,8 @@ const sendToDL = async (path: string, albums: Array<Album>): Promise<boolean> =>
     return false
   }
 
-  console.log("已提交图集下载任务")
-  message.success("已提交图集下载任务")
+  console.log("已提交图集下载的任务")
+  message.success("已提交图集下载的任务")
   return true
 }
 
@@ -244,7 +260,7 @@ export const startDLPics = async function (setWorking: React.Dispatch<React.SetS
     // 当图集数量为空时，不能保存最新的进度信息到存储
     if (payload.posts.length === 0) {
       console.log(`[${task.plat}][${task.uid}] 没有新图集，不需保存进度`)
-      message.warn(`[${task.plat}][${task.uid}] 没有新图集`)
+      message.info(`[${task.plat}][${task.uid}] 没有新图集`)
       continue
     }
 

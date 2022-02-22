@@ -99,14 +99,16 @@ const Remote = (props: { style?: CSSProperties }): JSX.Element => {
         return
       }
 
+      // 配置服务端域名
       setDomain(vps.domain)
-      try {
-        request(`${vps.domain}/api/pics/dl/status`, undefined,
-          {headers: {"Authorization": vps.auth}})
-        setConnOK(true)
-      } catch (e) {
+
+      // 更新连接服务端的状态
+      request(`${vps.domain}/api/pics/dl/status`, undefined,
+        {headers: {"Authorization": vps.auth}}).then(() => setConnOK(true)).catch((e) => {
+        console.log("无法连接服务端：", e)
+        message.warn("无法连接服务端")
         setConnOK(false)
-      }
+      })
     }
 
     init()
