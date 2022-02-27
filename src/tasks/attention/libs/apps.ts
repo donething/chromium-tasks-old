@@ -1,9 +1,10 @@
 // 应用的工具类
-import {date, notify} from "do-utils/dist/utils"
-import {WXPush} from "do-utils/dist/wxpush"
+import {notify} from "do-utils/dist/utils"
 import {request} from "do-utils"
 import {ReactComponent as IconAppstore} from "../../../icons/appstore.svg"
 import {ReactComponent as IconPlaystore} from "../../../icons/playstore.svg"
+import {WXQiYe} from "do-utils/dist/wxpush/qiye"
+import {pushCardMsg} from "../../../comm/comm"
 
 export namespace app {
   const TAG = "[Apps]"
@@ -187,16 +188,13 @@ export namespace app {
           }
         ])
 
-        // 实例化微信推送
-        let wxPush = await WXPush.chromiumStorageWXPush()
-        let data = WXPush.MsgTpls.general("关注的应用 已免费",
-          `应用："${status.name}"\nID: ${status.trackId}`, date({}))
-        let result = await wxPush.sandbox.pushTpl(wxPush.toUID, wxPush.tplID, data, status.viewURL)
-        if (result.errcode === 0) {
-          console.log(TAG, "推送微信消息成功")
-        } else {
-          console.log(TAG, "推送微信消息失败", result)
-        }
+        // 推送消息
+        pushCardMsg(
+          "关注的应用已免费",
+          `${WXQiYe.MsgCard.genHighlightText(status.name)}\n应用 ID: ${status.trackId}`,
+          status.viewURL,
+          "去下载"
+        )
       }
     }
   }
