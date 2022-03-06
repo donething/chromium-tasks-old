@@ -174,7 +174,7 @@ export namespace anchor {
           return new Status({
             name: `不存在：${basic.id}`,
             // 因为 basic 的 id 为用户 id，而不是房间号，获取状态出错时不能知道其房间号，所以访问首页
-            liveUrl: `https://live.bilibili.com/`
+            liveUrl: `https://space.bilibili.com/${basic.id}/`
           })
         }
 
@@ -209,7 +209,7 @@ export namespace anchor {
           console.log(TAG, `${basic.plat} 不存在该主播(${basic.idNew || basic.id})`)
           return new Status({
             name: `不存在："${basic.id}"`,
-            liveUrl: "https://www.douyin.com/"
+            liveUrl: `https://www.douyin.com/user/${result?.data?.room.owner?.sec_uid || "未知用户"}`
           })
         }
         let name = result?.data?.room?.owner?.nickname

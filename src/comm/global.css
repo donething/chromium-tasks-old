@@ -38,7 +38,7 @@ hr {
 /* 四边边框 */
 .border {
   border: 1px rgba(0, 0, 0, 0.08) solid;
-  box-shadow: 0 2px 3px rgb(0 0 0 / 10%);
+  border-radius: 3px;
 }
 
 /* 左右边框 */
@@ -76,6 +76,19 @@ hr {
 /* flex-warp：可换行 */
 .wrap {
   flex-wrap: wrap;
+}
+
+/* flex 元素间的间隔 */
+.gap {
+  gap: 5px
+}
+
+.gap-l {
+  gap: 8px;
+}
+
+.gap-s {
+  gap: 3px
 }
 
 /* justify-content: 定义主轴上项目的排列规则 */
@@ -295,7 +308,7 @@ hr {
   border-radius: 50%;
 }
 
-.avatar-small {
+.avatar-s {
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -331,21 +344,25 @@ hr {
 
 /* 水平内边距 */
 .padding-h {
-  padding: 0 5px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .padding-h-large {
-  padding: 0 10px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 
 /* 垂直内边距 */
 .padding-v {
-  padding: 5px 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .padding-v-large {
-  padding: 10px 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 /* 元素的上内边距 */
@@ -550,6 +567,19 @@ hr {
 
 .clickable:hover {
   color: #40a9ff;
+}
+
+/* 边框元素悬浮动画 */
+.hoverable {
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+.hoverable:hover {
+  cursor: pointer;
+  border-color: transparent;
+  box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.16),
+  0 3px 6px 0 rgba(0, 0, 0, 0.12),
+  0 5px 12px 4px rgba(0, 0, 0, 0.09);
 }
 
 .success-text {

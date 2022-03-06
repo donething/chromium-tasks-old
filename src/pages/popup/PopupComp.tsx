@@ -5,6 +5,7 @@ import {ReactComponent as IconAttention} from "../../icons/attention.svg"
 import {ReactComponent as IconMatches} from "../../icons/matches.svg"
 import {ReactComponent as IconTasks} from "../../icons/tasks.svg"
 import {ReactComponent as IconPics} from "../../icons/pic.svg"
+import {ReactComponent as IconZuji} from "../../icons/foot.svg"
 import {ReactComponent as IconOptions} from "../../icons/options.svg"
 
 function PopupComp() {
@@ -28,6 +29,10 @@ function PopupComp() {
 
       <span className="clickable" onClick={() => chrome.tabs.create({url: "/index.html#/pics"})}>
         <Icon component={IconPics}/> 图片下载
+      </span>
+
+      <span className="clickable" onClick={() => chrome.tabs.create({url: "/index.html#/zuji"})}>
+        <Icon component={IconZuji}/> 足迹直播
       </span>
 
       <span className="clickable" onClick={() => chrome.tabs.create({url: "/index.html#/options"})}>

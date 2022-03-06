@@ -7,8 +7,9 @@ import PopupComp from './pages/popup/PopupComp'
 import AttentionComp from "./tasks/attention/attentions"
 import MatchesComp from "./tasks/matches/matches"
 import TasksComp from "./tasks/tasks"
-import './index.css'
 import PicTaskComp from "./tasks/pics/pic_task_comp"
+import {ZujiComp} from "./tasks/zuji/zuji"
+import './index.css'
 
 ReactDOM.render(
   <React.StrictMode>
@@ -19,6 +20,7 @@ ReactDOM.render(
       <Route path="/matches" component={MatchesComp}/>
       <Route path="/tasks" component={TasksComp}/>
       <Route path="/pics" component={PicTaskComp}/>
+      <Route path="/zuji" component={ZujiComp}/>
     </Router>
   </React.StrictMode>,
   document.getElementById('root')
