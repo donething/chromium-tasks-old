@@ -1,8 +1,10 @@
 // 领取京东的京豆
 import {request} from "do-utils"
+import {pushCardMsg} from "../comm/push"
+import {notify} from "do-utils/dist/utils"
 
 export const JD = {
-  TAG: "京豆",
+  TAG: "[JD]",
 
   sign: async function () {
     let total = 0
@@ -26,5 +28,58 @@ export const JD = {
     }
 
     // 转盘
-  }
+  },
+
+  /**
+   * 订购商品
+   * @param pid 商品 ID
+   * @param area 地区编号
+   * @description 参数获取：打开 Chrome console，刷新商品页面，按`Ctrl+Shift+F`，输入"stock"后回车搜索
+   * @see https://github.com/shaodahong/dahong/issues/13
+   */
+  order: async function (pid: string, area: string) {
+    // 商品链接
+    let pURL = `https://item.jd.com/${pid}.html`
+
+    // 是否有货
+    let stockURL = `https://item-soa.jd.com/getWareBusiness?skuId=${pid}&area=${area}`
+    let stockResp = await request(stockURL)
+    let stockObj = await stockResp.json()
+    if (stockObj.stockInfo.stockDesc.indexOf("无货") >= 0) {
+      console.log(this.TAG, "商品还没货，无法购买", pURL)
+      return
+    }
+    if (stockObj.stockInfo.stockDesc.indexOf("有货") === -1) {
+      console.log(this.TAG, "检查商品有货时出错：", pURL, stockObj)
+      pushCardMsg(`${this.TAG} 检查商品有货时出错`, JSON.stringify(stockObj, null, 2),
+        pURL, "查看商品")
+      return
+    }
+    // 有货
+    console.log(this.TAG, "关注的商品已有货：", pURL)
+    chrome.tabs.create({url: `https://cart.jd.com/gate.action?pid=${pid}&pcount=1&ptype=1`})
+    notify({
+      title: "关注的商品已有货",
+      message: "可以去购买了",
+      iconUrl: chrome.runtime.getURL("/icons/extension_48.png"),
+      buttons: [{title: "查看商品"}]
+    }, [() => chrome.tabs.create({url: pURL})])
+
+    pushCardMsg(`${this.TAG} 关注的商品已有货`, "可以去购买了", pURL, "查看商品")
+    return
+
+
+    // 加入购入车
+    let toCartURL = `https://cart.jd.com/tproduct?pid=${pid}&rid=${Math.random()}`
+    let toCardResp = await request(toCartURL, {})
+    let toCardObj = await toCardResp.json()
+    if (toCardObj && toCardObj.success && toCardObj.lastAddedSku) {
+      console.log(this.TAG, `已将“${toCardObj.lastAddedSku.name}”加入购物车`, pURL)
+    } else {
+      console.log(this.TAG, `将商品加入购入车时出错`, pURL, toCardObj)
+      pushCardMsg(`${this.TAG} 将商品加入购入车时出错`, JSON.stringify(toCardObj, null, 2),
+        pURL, "查看商品")
+      return
+    }
+  },
 }

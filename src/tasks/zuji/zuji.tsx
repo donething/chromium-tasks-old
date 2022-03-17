@@ -44,7 +44,7 @@ const ZJSettings = () => {
 
   useEffect(() => {
     setSsid(localStorage.getItem(LS_SSID) || "")
-  })
+  }, [])
 
   return (
     <Modal title="设置" visible={isSVisible} okText="保存" onOk={_ => {

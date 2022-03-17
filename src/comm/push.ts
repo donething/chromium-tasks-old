@@ -36,9 +36,15 @@ export const pushCardMsg = async (title: string, description: string, url: strin
   let error = await wxPush.pushCard(agentid, title, description, "", url, btnTxt)
   if (error) {
     console.log("推送微信卡片消息失败", error)
+    notify({
+      title: "推送微信卡片消息失败",
+      message: error.message,
+      iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+    })
     return
   }
-  console.log("推送微信卡片消息失败")
+
+  console.log("推送微信卡片消息成功：", title)
 }
 
 // 推送微信文本消息
@@ -50,9 +56,15 @@ export const pushTextMsg = async (title: string, content: string) => {
   let error = await wxPush.pushText(agentid, content)
   if (error) {
     console.log("推送微信文本消息失败", error)
+    notify({
+      title: "推送微信文本消息失败",
+      message: error.message,
+      iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+    })
     return
   }
-  console.log("推送微信文本消息失败")
+
+  console.log("推送微信文本消息成功：", title)
 }
 
 // 推送微信 Markdown 消息（暂只支持企业微信接收）
@@ -64,7 +76,13 @@ export const pushMarkdownMsg = async (content: string) => {
   let error = await wxPush.pushMarkdown(agentid, content)
   if (error) {
     console.log("推送微信 Markdown 消息失败", error)
+    notify({
+      title: "推送微信 Markdown 消息失败",
+      message: error.message,
+      iconUrl: chrome.runtime.getURL("/icons/extension_48.png")
+    })
     return
   }
-  console.log("推送微信 Markdown 消息失败")
+
+  console.log("推送微信 Markdown 消息成功")
 }

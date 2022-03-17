@@ -4370,10 +4370,10 @@ dns-txt@^2.0.2:
   dependencies:
     buffer-indexof "^1.0.0"
 
-do-utils@1.0.40:
-  version "1.0.40"
-  resolved "https://registry.yarnpkg.com/do-utils/-/do-utils-1.0.40.tgz#22c585d2b9bf0c99d39491b002be00b686af4752"
-  integrity sha512-/u/znGOv6R/mY6W2bvNgQXhKLhnVTjeVdfxN2o3kXP+kT94fYuKYeurQaUmVnDk119H1ZCki0Z7pTZ1YBv2uBw==
+do-utils@1.0.41:
+  version "1.0.41"
+  resolved "https://registry.yarnpkg.com/do-utils/-/do-utils-1.0.41.tgz#d9e3efb5b7cfbf4d24e91cc7d28a56fbfebb8383"
+  integrity sha512-z0x9iSES9P4hqi67sgZf9khS3tAqyN599v3XMMoayqU6Na1K35F6CEqSMhvdnE7Q1DAc8GltxtYeHETxOzZJYg==
 
 doctrine@^2.1.0:
   version "2.1.0"

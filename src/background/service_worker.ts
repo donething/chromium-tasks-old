@@ -6,6 +6,10 @@ import {CCmnn} from "../tasks/ccmnn"
 // 监听定时
 chrome.alarms.onAlarm.addListener(async alarm => {
   switch (alarm.name) {
+    case "oneMin":
+      console.log("开始执行每分钟周期的任务")
+      // JD.order("100033551654", "19_1607_47387_59093")
+      break
     case "threeMin":
       console.log("开始执行每3分钟周期的任务")
       // 主播
@@ -27,16 +31,24 @@ chrome.alarms.onAlarm.addListener(async alarm => {
       }
       chrome.alarms.create(CCmnn.TAG_EN, {delayInMinutes: 1})
       break
+    case "at20":
+      console.log(CCmnn.TAG, `开始执行"at20"周期的任务`)
+      chrome.tabs.create({url: "https://cart.jd.com/cart_index"})
+      break
   }
 })
 
 chrome.runtime.onInstalled.addListener(async () => {
+  // 每分钟执行任务
+  chrome.alarms.create("oneMin", {delayInMinutes: 1, periodInMinutes: 1})
   // 每3分钟执行任务
   chrome.alarms.create("threeMin", {delayInMinutes: 1, periodInMinutes: 3})
   // 每半小时执行任务
   chrome.alarms.create("halfhour", {delayInMinutes: 1, periodInMinutes: 30})
-})
 
+  // 定时执行
+  chrome.alarms.create("at20", {when: new Date("2022/3/16 19:59:58").getTime()})
+})
 
 // 每次运行浏览器时执行
 chrome.runtime.onStartup.addListener(async () => {
