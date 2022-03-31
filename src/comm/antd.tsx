@@ -1,8 +1,8 @@
 import {Button, Card, message, Modal, notification, Popconfirm, Upload} from "antd"
 import {UploadOutlined} from "@ant-design/icons"
-import {download} from "do-utils"
 import React, {CSSProperties} from "react"
 import {CardSize} from "antd/es/card"
+import {download} from "do-utils/dist/elem"
 
 /**
  * 删除数组中的元素，并提供撤销功能

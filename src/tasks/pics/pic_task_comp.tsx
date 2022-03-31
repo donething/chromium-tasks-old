@@ -7,6 +7,7 @@ import {OptionInput} from "../../components/option_input"
 import {delItemRevoke2} from "../../comm/antd"
 import {request} from "do-utils"
 import {clearProcess, startDLPics, startRetry} from "./task"
+import {sha256} from "do-utils/dist/text"
 
 // 存储到 chromium storage 的数据，键为"picTasks"
 export type StorePic = {
@@ -103,12 +104,26 @@ const Remote = (props: { style?: CSSProperties }): JSX.Element => {
       setDomain(vps.domain)
 
       // 更新连接服务端的状态
-      request(`${vps.domain}/api/pics/dl/status`, undefined,
-        {headers: {"Authorization": vps.auth}}).then(() => setConnOK(true)).catch((e) => {
-        console.log("无法连接服务端：", e)
-        message.warn("无法连接服务端")
+      // 操作授权码
+      let t = new Date().getTime()
+      let s = await sha256(vps.auth + t + vps.auth)
+
+      let resp = await request(`${vps.domain}/api/pics/dl/status?t=${t}&s=${s}`).catch((e) => {
+        console.error("无法连接服务端：", e)
+        message.error("无法连接服务端")
         setConnOK(false)
       })
+      if (!resp) return
+
+      let obj = await resp.json().catch((e) => {
+        console.error("服务端响应的内容有误：", e)
+        message.error("服务端响应的内容有误")
+        setConnOK(false)
+      })
+      if (!obj) return
+
+      setConnOK(obj?.code === 0)
+      console.log("服务端返回状态：", obj)
     }
 
     init()
@@ -123,7 +138,7 @@ const Remote = (props: { style?: CSSProperties }): JSX.Element => {
           extra={<span title="服务端的连接状态" className={mark}>{text}</span>}>
       <Space direction="vertical">
         <Button title="查看服务端的下载状态" size="small" onClick={() => {
-          window.open(`${domain}/#/status`, "_blank")
+          window.open(`${domain}/#/tasks`, "_blank")
         }}>下载进度</Button>
         <Button title="重试之前下载失败的图集" size="small" onClick={() => startRetry()}>重试失败</Button>
       </Space>

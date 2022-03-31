@@ -1,9 +1,11 @@
 import {StorePic, Task} from "./pic_task_comp"
-import {download, request} from "do-utils"
+import {request} from "do-utils"
 import {message} from "antd"
 import {sleep} from "do-utils/dist/utils"
 import React from "react"
 import {delRevoke} from "../../comm/antd"
+import {download} from "do-utils/dist/elem"
+import {sha256} from "do-utils/dist/text"
 
 // 微博图集，将保存到本地 json 文件中，可传给服务端下载
 type Album = {
@@ -223,8 +225,12 @@ const sendToDL = async (path: string, albums: Array<Album>): Promise<boolean> =>
     return false
   }
 
-  let resp = await request(vps.domain + path, albums,
-    {headers: {"Authorization": vps.auth}}).catch(e => console.log("发送下载图集的请求出错", e))
+  // 操作授权码
+  let t = new Date().getTime()
+  let s = await sha256(vps.auth + t + vps.auth)
+
+  let resp = await request(`${vps.domain}${path}?t=${t}&s=${s}`, albums)
+    .catch(e => console.log("发送下载图集的请求出错", e))
   if (!resp) {
     message.error("发送下载图集的请求出错")
     return false

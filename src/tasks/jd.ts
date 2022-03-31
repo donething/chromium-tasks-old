@@ -1,7 +1,7 @@
 // 领取京东的京豆
 import {request} from "do-utils"
 import {pushCardMsg} from "../comm/push"
-import {notify} from "do-utils/dist/utils"
+import {notify} from "do-utils/dist/elem"
 
 export const JD = {
   TAG: "[JD]",

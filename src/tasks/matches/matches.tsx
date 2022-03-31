@@ -1,6 +1,5 @@
 import {VPanel} from "../../components/vpanel"
 import {useEffect, useRef, useState} from "react"
-import {day, scrollIntoView} from "do-utils/dist/utils"
 import {Avatar, message, Space} from "antd"
 import {Element} from "cheerio"
 import "./matches.css"
@@ -12,6 +11,8 @@ import {ReactComponent as IconBili} from "../../icons/bili.svg"
 import {ReactComponent as IconDYS} from "../../icons/bili.svg"
 import {ReactComponent as IconLck} from "../../icons/lck.svg"
 import {ReactComponent as IconToCur} from "../../icons/to_current.svg"
+import {date} from "do-utils/dist/text"
+import {scrollIntoView} from "do-utils/dist/elem"
 
 const cheerio = require('cheerio')
 
@@ -190,7 +191,7 @@ const MatchesComp = function (): JSX.Element {
   let nextRef = useRef(0)
 
   // 设置当日的日期（如"20210125"）
-  let today = day()
+  let today = date(new Date(), "YYYYmmdd")
   // 需要获取赛程的比赛
   const REG_EIDS = /(全球总决赛)|(LPL)|(LCK)|(NEST)/
 

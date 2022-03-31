@@ -1,10 +1,10 @@
 // 应用的工具类
-import {notify} from "do-utils/dist/utils"
 import {request} from "do-utils"
 import {ReactComponent as IconAppstore} from "../../../icons/appstore.svg"
 import {ReactComponent as IconPlaystore} from "../../../icons/playstore.svg"
 import {WXQiYe} from "do-utils/dist/wxpush/qiye"
 import {pushCardMsg} from "../../../comm/push"
+import {notify} from "do-utils/dist/elem"
 
 export namespace app {
   const TAG = "[Apps]"

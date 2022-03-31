@@ -1,5 +1,5 @@
-import {notify} from "do-utils"
 import {WXQiYe} from "do-utils/dist/wxpush/qiye"
+import {notify} from "do-utils/dist/elem"
 
 // 微信推送实例
 let wxPush: WXQiYe | undefined = undefined

@@ -1,9 +1,9 @@
-import {notify} from "do-utils/dist/utils"
 import {request} from "do-utils"
 import {ReactComponent as IconHuya} from "../../../icons/huya.svg"
 import {ReactComponent as IconDouyu} from "../../../icons/douyu.svg"
 import {ReactComponent as IconDouyin} from "../../../icons/douyin.svg"
 import {ReactComponent as IconBili} from "../../../icons/bili.svg"
+import {notify} from "do-utils/dist/elem"
 
 // HTML解析库
 const cheerio = require('cheerio')
