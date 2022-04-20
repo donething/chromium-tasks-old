@@ -8,7 +8,6 @@ chrome.alarms.onAlarm.addListener(async alarm => {
   switch (alarm.name) {
     case "oneMin":
       console.log("开始执行每分钟周期的任务")
-      // JD.order("100033551654", "19_1607_47387_59093")
       break
     case "threeMin":
       console.log("开始执行每3分钟周期的任务")
@@ -31,8 +30,8 @@ chrome.alarms.onAlarm.addListener(async alarm => {
       }
       chrome.alarms.create(CCmnn.TAG_EN, {delayInMinutes: 1})
       break
-    case "at20":
-      console.log(CCmnn.TAG, `开始执行"at20"周期的任务`)
+    case "jd":
+      console.log(CCmnn.TAG, `开始执行"${CCmnn.TAG_EN}"周期的任务`)
       chrome.tabs.create({url: "https://cart.jd.com/cart_index"})
       break
   }
@@ -47,7 +46,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.alarms.create("halfhour", {delayInMinutes: 1, periodInMinutes: 30})
 
   // 定时执行
-  chrome.alarms.create("at20", {when: new Date("2022/3/16 19:59:58").getTime()})
+  chrome.alarms.create("jd", {when: new Date("2022/04/01 10:00:00").getTime()})
 })
 
 // 每次运行浏览器时执行
